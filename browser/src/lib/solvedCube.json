@@ -1,0 +1,174 @@
+{
+	"corners": {
+		"URF": {
+			"id": 0,
+			"curr": 0,
+			"colors": {
+				"U": "Y",
+				"R": "R",
+				"F": "B"
+			}
+		},
+		"ULF": {
+			"id": 1,
+			"curr": 1,
+			"colors": {
+				"U": "Y",
+				"L": "O",
+				"F": "B"
+			}
+		},
+		"ULB": {
+			"id": 2,
+			"curr": 2,
+			"colors": {
+				"U": "Y",
+				"L": "O",
+				"B": "G"
+			}
+		},
+		"URB": {
+			"id": 3,
+			"curr": 3,
+			"colors": {
+				"U": "Y",
+				"R": "R",
+				"B": "G"
+			}
+		},
+		"DRF": {
+			"id": 4,
+			"curr": 4,
+			"colors": {
+				"D": "W",
+				"R": "R",
+				"F": "B"
+			}
+		},
+		"DLF": {
+			"id": 5,
+			"curr": 5,
+			"colors": {
+				"D": "W",
+				"L": "O",
+				"F": "B"
+			}
+		},
+		"DLB": {
+			"id": 6,
+			"curr": 6,
+			"colors": {
+				"D": "W",
+				"L": "O",
+				"B": "G"
+			}
+		},
+		"DRB": {
+			"id": 7,
+			"curr": 7,
+			"colors": {
+				"D": "W",
+				"R": "R",
+				"B": "G"
+			}
+		}
+	},
+	"edges": {
+		"UF": {
+			"id": 0,
+			"curr": 0,
+			"colors": {
+				"U": "Y",
+				"F": "B"
+			}
+		},
+		"UL": {
+			"id": 1,
+			"curr": 1,
+			"colors": {
+				"U": "Y",
+				"L": "O"
+			}
+		},
+		"UB": {
+			"id": 2,
+			"curr": 2,
+			"colors": {
+				"U": "Y",
+				"B": "G"
+			}
+		},
+		"UR": {
+			"id": 3,
+			"curr": 3,
+			"colors": {
+				"U": "Y",
+				"R": "R"
+			}
+		},
+		"FR": {
+			"id": 4,
+			"curr": 4,
+			"colors": {
+				"F": "B",
+				"R": "R"
+			}
+		},
+		"FL": {
+			"id": 5,
+			"curr": 5,
+			"colors": {
+				"F": "B",
+				"L": "O"
+			}
+		},
+		"BL": {
+			"id": 6,
+			"curr": 6,
+			"colors": {
+				"B": "G",
+				"L": "O"
+			}
+		},
+		"BR": {
+			"id": 7,
+			"curr": 7,
+			"colors": {
+				"B": "G",
+				"R": "R"
+			}
+		},
+		"DF": {
+			"id": 8,
+			"curr": 8,
+			"colors": {
+				"D": "W",
+				"F": "B"
+			}
+		},
+		"DL": {
+			"id": 9,
+			"curr": 9,
+			"colors": {
+				"D": "W",
+				"L": "O"
+			}
+		},
+		"DB": {
+			"id": 10,
+			"curr": 10,
+			"colors": {
+				"D": "W",
+				"B": "G"
+			}
+		},
+		"DR": {
+			"id": 11,
+			"curr": 11,
+			"colors": {
+				"D": "W",
+				"R": "R"
+			}
+		}
+	}
+}

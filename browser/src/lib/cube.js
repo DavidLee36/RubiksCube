@@ -1,21 +1,74 @@
-export class Cube {
-	
-}
-
-class Piece {
-	constructor(id, colors) {
-		this.id = id;
-		this.location = id;
-		this.colors = colors;
-	}
-}
-
-class CornerPiece extends Piece {
-	constructor()
-}
-
-class EdgePiece extends Piece {
-	constructor() {
-
-	}
+const corners = {
+	"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
+		"URF": {
+		"id": 0,
+		"curr": 0,
+		"colors": {
+			"U": "Y",
+			"R": "R",
+			"F": "B"
+		}
+	},
 }
