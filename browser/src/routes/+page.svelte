@@ -1,13 +1,11 @@
 <script>
-	import { Cube } from "$lib/cube";
+	import * as cube from "$lib/cube";
 	import Cube3D from "$lib/components/cube3D.svelte";
 	import Globe from "$lib/components/threejs/globe.svelte";
-
-	let cube = new Cube();
-	console.log(cube.toString())
 </script>
 
 <h1>Hello World!</h1>
+<button onclick={() => cube.print()}>print</button>
 <Cube3D />
 
 <style>

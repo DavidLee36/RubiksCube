@@ -75,96 +75,96 @@
 	},
 	"edges": {
 		"UF": {
-			"id": 0,
-			"curr": 0,
+			"id": 8,
+			"curr": 8,
 			"colors": {
 				"U": "Y",
 				"F": "B"
 			}
 		},
 		"UL": {
-			"id": 1,
-			"curr": 1,
+			"id": 9,
+			"curr": 9,
 			"colors": {
 				"U": "Y",
 				"L": "O"
 			}
 		},
 		"UB": {
-			"id": 2,
-			"curr": 2,
+			"id": 10,
+			"curr": 10,
 			"colors": {
 				"U": "Y",
 				"B": "G"
 			}
 		},
 		"UR": {
-			"id": 3,
-			"curr": 3,
+			"id": 11,
+			"curr": 11,
 			"colors": {
 				"U": "Y",
 				"R": "R"
 			}
 		},
 		"FR": {
-			"id": 4,
-			"curr": 4,
+			"id": 12,
+			"curr": 12,
 			"colors": {
 				"F": "B",
 				"R": "R"
 			}
 		},
 		"FL": {
-			"id": 5,
-			"curr": 5,
+			"id": 13,
+			"curr": 13,
 			"colors": {
 				"F": "B",
 				"L": "O"
 			}
 		},
 		"BL": {
-			"id": 6,
-			"curr": 6,
+			"id": 14,
+			"curr": 14,
 			"colors": {
 				"B": "G",
 				"L": "O"
 			}
 		},
 		"BR": {
-			"id": 7,
-			"curr": 7,
+			"id": 15,
+			"curr": 15,
 			"colors": {
 				"B": "G",
 				"R": "R"
 			}
 		},
 		"DF": {
-			"id": 8,
-			"curr": 8,
+			"id": 16,
+			"curr": 16,
 			"colors": {
 				"D": "W",
 				"F": "B"
 			}
 		},
 		"DL": {
-			"id": 9,
-			"curr": 9,
+			"id": 17,
+			"curr": 17,
 			"colors": {
 				"D": "W",
 				"L": "O"
 			}
 		},
 		"DB": {
-			"id": 10,
-			"curr": 10,
+			"id": 18,
+			"curr": 18,
 			"colors": {
 				"D": "W",
 				"B": "G"
 			}
 		},
 		"DR": {
-			"id": 11,
-			"curr": 11,
+			"id": 19,
+			"curr": 19,
 			"colors": {
 				"D": "W",
 				"R": "R"
