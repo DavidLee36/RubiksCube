@@ -1,5 +1,14 @@
 import solvedCube from './solvedCube.json';
 
+export const faces = {
+	'U': 0,
+	'L': 1,
+	'F': 2,
+	'R': 3,
+	'B': 4,
+	'D': 5
+};
+
 let cube = structuredClone(solvedCube);
 let moveList = [];
 
@@ -8,28 +17,8 @@ export function print() {
 	console.log(isCubeSolved());
 }
 
-function faceToInt(face) {
-	switch (face) {
-		case 'U':
-			return 0;
-		case 'L':
-			return 1;
-		case 'F':
-			return 2;
-		case 'R':
-			return 3;
-		case 'B':
-			return 4;
-		case 'D':
-			return 5;
-		default:
-			console.error(`${face} is not a valid face`);
-			return -1;
-	}
-}
-
 export function move(face, clockwise = true) {
-	let moveVal = faceToInt(face).toString() + (clockwise ? "1" : "0");
+	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
 	moveList.push(moveVal);
 
 	const ccwLoop = clockwise ? 1 : 3; // For a ccw turn simply make 3 cw turns
@@ -109,7 +98,7 @@ export function move(face, clockwise = true) {
 				cube.LF.colors.F = cubeCopy.DF.colors.F;
 				//LF -> UF
 				cube.UF.curr = cubeCopy.LF.curr;
-				cube.UF.colors.F = cubeCopy.LF.colors.L;
+				cube.UF.colors.U = cubeCopy.LF.colors.L;
 				cube.UF.colors.F = cubeCopy.LF.colors.F;
 				break;
 			case 'L':
@@ -271,7 +260,20 @@ export function move(face, clockwise = true) {
 	}
 }
 
-//TODO: support ID
+export function fullMoveCycle() {
+	const faceKeys = Object.keys(faces);
+	faceKeys.forEach(face => {
+		for(let i = 0; i < 4; i++) {
+			move(face);
+		}
+		print();
+		for(let i = 0; i < 4; i++) {
+			move(face, false);
+		}
+		print();
+	})
+}
+
 function isPieceSolved(piece) {
 	const colorKeys = Object.keys(cube[piece].colors);
 	for (const colorKey of colorKeys) {

@@ -4,8 +4,7 @@
 	import Globe from "$lib/components/threejs/globe.svelte";
 
 	function moveClick() {
-		cube.move('U', true);
-		cube.print();
+		cube.fullMoveCycle();
 	}
 </script>
 
