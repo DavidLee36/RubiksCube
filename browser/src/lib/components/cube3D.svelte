@@ -34,15 +34,17 @@
 		const fov = 75;
 		const aspectRatio = width / height;
 		const near = 0.1;
-		const far = 10;
+		const far = 100;
 		camera = new THREE.PerspectiveCamera(fov, aspectRatio, near, far);
-		camera.position.z = 7;
+		camera.position.set(5, 5, 5);
+		
 
 		scene = new THREE.Scene();
 
 		controls = new OrbitControls(camera, renderer.domElement);
 		controls.enableDamping = true;
 		controls.dampingFactor = 0.03;
+		controls.update();
 
 		initCube();
 	}

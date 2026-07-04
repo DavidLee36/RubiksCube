@@ -1,3 +1,5 @@
+import * as helpers from "./helpers.js";
+
 import solvedCube from './solvedCube.json';
 
 export const faces = {
@@ -13,25 +15,80 @@ let cube = structuredClone(solvedCube);
 let moveList = [];
 
 /**
- * print the current state of the cube as well as it's current solved state
+ * Runner for the solve algorithm using the LBL approach
+ * 1. white cross
+ * 2. white corners
+ * 3. 2nd layer
+ * 4. yellow cross
+ * 5. align yellow cross
+ * 6. position yellow corners
+ * 7. solve yellow corners
  */
-export function print() {
-	console.log(cube);
-	console.log(isCubeSolved());
+export function solve() {
+	whiteCross();
+	whiteCorners();
+	secondLayer();
+	yellowCross();
+	alignYellowCross();
+	positionYellowCorners();
+	solveYellowCorners();
+}
+
+function whiteCross() {
+
+}
+
+function whiteCorners() {
+
+}
+
+function secondLayer() {
+
+}
+
+function yellowCross() {
+
+}
+
+function alignYellowCross() {
+
+}
+
+function positionYellowCorners() {
+
+}
+
+function solveYellowCorners() {
+
+}
+
+/**
+ * Applies between min and max random rotations to the cube
+ * @param {number} min min amount of rotations
+ * @param {number} max max amount of rotations
+ */
+export function scramble(min = 15, max = 30) {
+	const turns = helpers.randIntInclusive(min, max);
+	for (let i = 0; i < turns; i++) {
+		const r = helpers.randIntInclusive(0, 5);
+		const face = Object.keys(faces).find(k => faces[k] == r);
+		const dir = Math.random() < 0.5;
+		move(face, dir)
+	}
 }
 
 /**
  * Rotate the cube in memory and add the move to the moveList which is used by the UI and ESP32
  * Hard coded all CW moves, to perform a CCW move we just do 3x CW moves
  * @param {string} face 
- * @param {boolean} clockwise 
+ * @param {boolean} clockwise
  */
 export function move(face, clockwise = true) {
 	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
 	moveList.push(moveVal);
 
-	const ccwLoop = clockwise ? 1 : 3; // For a ccw turn simply make 3 cw turns
-	for (let i = 0; i < ccwLoop; i++) {
+	const ccwLoop = clockwise ? 1 : 3; // For a CCW turn simply make 3 CW turns
+	for (let i = 0; i < ccwLoop; i++) { // If turning CW this will only run once
 		let cubeCopy = structuredClone(cube);
 		switch (face) {
 			case 'U':
@@ -276,11 +333,11 @@ export function move(face, clockwise = true) {
 export function fullMoveCycle() {
 	const faceKeys = Object.keys(faces);
 	faceKeys.forEach(face => {
-		for(let i = 0; i < 4; i++) {
+		for (let i = 0; i < 4; i++) { // Move the face 4x CW
 			move(face);
 		}
 		print();
-		for(let i = 0; i < 4; i++) {
+		for (let i = 0; i < 4; i++) { // Move the face 4x CCW
 			move(face, false);
 		}
 		print();
@@ -288,8 +345,31 @@ export function fullMoveCycle() {
 }
 
 /**
+ * locates a given piece's current location
+ * @param {number} id
+ * @returns {piece} piece 
+ */
+function findPiece(id) {
+	const pieceKeys = Object.keys(cube);
+	pieceKeys.forEach(piece => {
+		if (cube[piece].id == id) return cube[piece];
+	});
+	console.error(`Unable to locate ${id}, something has gone horribly wrong`);
+	return {};
+}
+
+/**
+ * Determine if a piece is in the correct slot, doesn't determine if it's oriented correctly
+ * @param {string} piece
+ * @returns {boolean}
+ */
+function isPieceSlotted(piece) {
+	return cube[piece].id == cube[piece].curr;
+}
+
+/**
  * Check if a given piece is in the correct slot and correct orientation
- * @param {piece} piece 
+ * @param {string} piece 
  * @returns {boolean}
  */
 function isPieceSolved(piece) {
@@ -322,10 +402,20 @@ export function isCubeSolved() {
 }
 
 /**
- * Reset the cube in memory to it's solved state
+ * print the current state of the cube as well as it's current solved state
  */
-export function resetCube() {
+export function print() {
+	console.log(cube);
+	console.log(moveList);
+	console.log(isCubeSolved());
+}
+
+/**
+ * Reset the cube in memory to it's solved state and wipe moveList[]
+ */
+export function reset() {
 	cube = structuredClone(solvedCube);
+	moveList = [];
 }
 
 export function getMoveList() {
