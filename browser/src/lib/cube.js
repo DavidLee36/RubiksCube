@@ -12,11 +12,20 @@ export const faces = {
 let cube = structuredClone(solvedCube);
 let moveList = [];
 
+/**
+ * print the current state of the cube as well as it's current solved state
+ */
 export function print() {
 	console.log(cube);
 	console.log(isCubeSolved());
 }
 
+/**
+ * Rotate the cube in memory and add the move to the moveList which is used by the UI and ESP32
+ * Hard coded all CW moves, to perform a CCW move we just do 3x CW moves
+ * @param {string} face 
+ * @param {boolean} clockwise 
+ */
 export function move(face, clockwise = true) {
 	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
 	moveList.push(moveVal);
@@ -260,6 +269,10 @@ export function move(face, clockwise = true) {
 	}
 }
 
+/**
+ * Rotate each face 4 times both CW and CCW, print the cube after each 4x rotation.
+ * For debug and testing purposes
+ */
 export function fullMoveCycle() {
 	const faceKeys = Object.keys(faces);
 	faceKeys.forEach(face => {
@@ -274,6 +287,11 @@ export function fullMoveCycle() {
 	})
 }
 
+/**
+ * Check if a given piece is in the correct slot and correct orientation
+ * @param {piece} piece 
+ * @returns {boolean}
+ */
 function isPieceSolved(piece) {
 	const colorKeys = Object.keys(cube[piece].colors);
 	for (const colorKey of colorKeys) {
@@ -284,6 +302,10 @@ function isPieceSolved(piece) {
 	return true;
 }
 
+/**
+ * Checks if the cube is in a solved state
+ * @returns object containing solved state (boolean) and arr of incorrect pieces (array)
+ */
 export function isCubeSolved() {
 	let unsolved = [];
 
@@ -299,6 +321,9 @@ export function isCubeSolved() {
 	}
 }
 
+/**
+ * Reset the cube in memory to it's solved state
+ */
 export function resetCube() {
 	cube = structuredClone(solvedCube);
 }
