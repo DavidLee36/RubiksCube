@@ -86,7 +86,17 @@ export function scramble(min = 15, max = 30) {
 export function move(face, clockwise = true) {
 	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
 	moveList.push(moveVal);
+	applyMove(cube, face, clockwise);
+}
 
+/**
+ * Rotates the given cube in place. Pure core shared by the memory move() and
+ * the 3D display: no logging, no module state, operates on whatever cube it's handed.
+ * @param {object} cube the cube to mutate
+ * @param {string} face
+ * @param {boolean} clockwise
+ */
+export function applyMove(cube, face, clockwise = true) {
 	const ccwLoop = clockwise ? 1 : 3; // For a CCW turn simply make 3 CW turns
 	for (let i = 0; i < ccwLoop; i++) { // If turning CW this will only run once
 		let cubeCopy = structuredClone(cube);
@@ -421,3 +431,9 @@ export function reset() {
 export function getMoveList() {
 	return [...moveList];
 }
+
+export function clearMoveList() {
+	moveList = [];
+}
+
+export function getCube() { return structuredClone(cube); }
