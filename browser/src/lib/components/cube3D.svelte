@@ -151,6 +151,20 @@
 		controls.update();
 
 		initCube();
+
+		// Uniform ambient fill so every face gets the same base light (no gradient)
+		const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+		scene.add(ambientLight);
+
+		// Key light for a bright, dimensional highlight
+		const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+		keyLight.position.set(6, 9, 7);
+		scene.add(keyLight);
+
+		// Soft fill from the opposite side to lift the shadows
+		const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+		fillLight.position.set(-6, -3, -5);
+		scene.add(fillLight);
 	}
 
 	function initCube() {
@@ -219,20 +233,6 @@
 
 	onMount(() => {
 		initScene();
-
-		// Uniform ambient fill so every face gets the same base light (no gradient)
-		const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-		scene.add(ambientLight);
-
-		// Key light for a bright, dimensional highlight
-		const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-		keyLight.position.set(6, 9, 7);
-		scene.add(keyLight);
-
-		// Soft fill from the opposite side to lift the shadows
-		const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
-		fillLight.position.set(-6, -3, -5);
-		scene.add(fillLight);
 
 		let frame;
 		function animate(t = 0) {

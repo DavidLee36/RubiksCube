@@ -34,6 +34,9 @@ export function solve() {
 	solveYellowCorners();
 }
 
+/**
+ * Solve the white cross one piece at a time
+ */
 function whiteCross() {
 	console.log("solving white cross...");
 	let whiteCrossPieces = ["DF", "DL", "DB", "DR"];
@@ -75,7 +78,7 @@ function whiteCross() {
 			sexyMove(sexyFace, "R", "U");
 		}
 
-		// Third layer
+		// Third layer, move to correct slot in bottom layer
 		if(pieceCurrentLayer(piece) == 3) {
 			//console.log("Third layer, move to correct slot");
 			let currSlot = findPiece(cube[piece].id);
@@ -96,6 +99,8 @@ function whiteCross() {
 			move(leftId);
 			move("D");
 		}
+
+		// Piece is solved
 	}
 }
 
