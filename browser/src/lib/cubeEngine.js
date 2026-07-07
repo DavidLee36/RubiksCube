@@ -35,7 +35,68 @@ export function solve() {
 }
 
 function whiteCross() {
+	console.log("solving white cross...");
+	let whiteCrossPieces = ["DF", "DL", "DB", "DR"];
+	for(const piece of whiteCrossPieces) {
+		if(isPieceSolved(piece)) continue; //already solved
 
+		// Bottom layer incorrect location, move to top
+		if(!isPieceSlotted(piece) && pieceCurrentLayer(piece) == 1) {
+			//console.log("Bottom layer incorrect location, move to top");
+			const currSlot = findPiece(cube[piece].id);
+			const currSlotFaces = Object.keys(currSlot.colors);
+			move(currSlotFaces[1]);
+			move(currSlotFaces[1]);
+		}
+
+		// Second layer
+		if(pieceCurrentLayer(piece) == 2) {
+			//console.log("Second layer, moving up");
+			const currSlot = findPiece(cube[piece].id);
+			const currSlotFaces = Object.keys(currSlot.colors);
+			let sexyFace;
+			switch (currSlot.id) {
+				case 12:
+					sexyFace = "F";
+					break;
+				case 13:
+					sexyFace = "L";
+					break;
+				case 14:
+					sexyFace = "B";
+					break;
+				case 15:
+					sexyFace = "R";
+					break;
+				default:
+					console.error("horrible error solving second layer white cross situation");
+					break;
+			}
+			sexyMove(sexyFace, "R", "U");
+		}
+
+		// Third layer
+		if(pieceCurrentLayer(piece) == 3) {
+			//console.log("Third layer, move to correct slot");
+			let currSlot = findPiece(cube[piece].id);
+			while(currSlot.id != cube[piece].id - 8) {
+				move('U');
+				currSlot = findPiece(cube[piece].id);
+			}
+			move(piece.charAt(1));
+			move(piece.charAt(1));
+		}
+
+		// Piece is now in the correct slot but not oriented correctly
+		if(!isPieceSolved(piece)) {
+			move(piece.charAt(1));
+			move("D", false);
+			let leftId = faces[piece.charAt(1)]-1;
+			if(leftId == 0) leftId = 4;
+			move(leftId);
+			move("D");
+		}
+	}
 }
 
 function whiteCorners() {
@@ -63,6 +124,35 @@ function solveYellowCorners() {
 }
 
 /**
+ * performs the sexy move on the provided face using the provided hand using top as the top face
+ * @param face str or number
+ * @param {string} hand R or L
+ * @param {string} top U or D
+ */
+export function sexyMove(face, hand, top) {
+	if(typeof face === "string") face = faces[face];
+	if(top == "U") {
+		if(hand.toUpperCase() == "R") {
+			let rightFace = face + 1;
+			if(rightFace > 4) rightFace = 1;
+			move(rightFace);
+			move('U');
+			move(rightFace, false);
+			move('U', false);
+		}else {
+			let leftFace = face - 1;
+			if(leftFace < 1) leftFace = 4;
+			move(leftFace, false);
+			move('U', false);
+			move(leftFace);
+			move('U');
+		}
+	}else {
+		console.error("NOT IMPELEMENTED");
+	}
+}
+
+/**
  * Applies between min and max random rotations to the cube
  * @param {number} min min amount of rotations
  * @param {number} max max amount of rotations
@@ -80,10 +170,13 @@ export function scramble(min = 15, max = 30) {
 /**
  * Rotate the cube in memory and add the move to the moveList which is used by the UI and ESP32
  * Hard coded all CW moves, to perform a CCW move we just do 3x CW moves
- * @param {string} face 
+ * @param face string or number
  * @param {boolean} clockwise
  */
 export function move(face, clockwise = true) {
+	if(typeof face === 'number') {
+		face = Object.keys(faces)[face];
+	}
 	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
 	moveList.push(moveVal);
 	applyMove(cube, face, clockwise);
@@ -361,9 +454,9 @@ export function fullMoveCycle() {
  */
 function findPiece(id) {
 	const pieceKeys = Object.keys(cube);
-	pieceKeys.forEach(piece => {
-		if (cube[piece].id == id) return cube[piece];
-	});
+	for(const piece of pieceKeys) {
+		if (cube[piece].curr == id) return cube[piece];
+	}
 	console.error(`Unable to locate ${id}, something has gone horribly wrong`);
 	return {};
 }
@@ -375,6 +468,23 @@ function findPiece(id) {
  */
 function isPieceSlotted(piece) {
 	return cube[piece].id == cube[piece].curr;
+}
+
+/**
+ * get the current layer of the piece represented by 1,2,3 | bottom, mid, top
+ * @param {string} piece 
+ * @returns current layer (1,2,3 | bottom,middle,top)
+ */
+function pieceCurrentLayer(piece) {
+	let currLocation = findPiece(cube[piece].id)
+	if (currLocation.id <= 7) { // corner
+		if (currLocation.id < 4) return 3; // top layer
+		return 1; // bottom layer
+	}else { // edge piece
+		if (currLocation.id < 12) return 3; // top layer
+		if (currLocation.id < 16) return 2; // middle layer
+		return 1; // bottom layer
+	}
 }
 
 /**

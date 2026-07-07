@@ -4,7 +4,7 @@
 
 	let cube3d;
 	let busy = $state(false); // true while the 3D is animating; disables buttons
-	let duration = $state(250); // rotation animation speed in ms
+	let duration = $state(50); // rotation animation speed in ms
 	let scrambleMin = $state(15); // fewest scramble turns
 	let scrambleMax = $state(30); // most scramble turns
 
@@ -47,6 +47,12 @@
 	function resetClick() {
 		cubeEngine.reset();
 		cube3d.resetCube();
+	}
+
+	function sexyClick() {
+		cubeEngine.reset();
+		cubeEngine.sexyMove(2, "R", "U");
+		cube3d.animateCube(duration);
 	}
 </script>
 
@@ -120,6 +126,7 @@
 			<button class="action solve" disabled={busy} onclick={solveClick}>Solve</button>
 			<button class="action cycle" disabled={busy} onclick={cycleClick}>Cycle</button>
 			<button class="action reset" disabled={busy} onclick={resetClick}>Reset</button>
+			<button class="action sexy" disabled={busy} onclick={sexyClick}>Sexy Move</button>
 			<button class="action ghost" disabled={busy} onclick={() => cubeEngine.print()}>Print</button>
 		</div>
 	</section>
@@ -278,6 +285,7 @@
 	.action.solve    { background: #24a148; }
 	.action.cycle    { background: #3a6df0; }
 	.action.reset    { background: #d83a4a; }
+	.action.sexy     { background: #f1008d; }
 
 	.action.ghost {
 		background: rgba(255, 255, 255, 0.06);

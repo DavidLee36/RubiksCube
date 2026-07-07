@@ -237,7 +237,7 @@
 		let frame;
 		function animate(t = 0) {
 			frame = requestAnimationFrame(animate);
-			cubeGroup.rotation.y = t * 0.0001;
+			//cubeGroup.rotation.y = t * 0.0001; // rotate
 			controls.update();
 			renderer.render(scene, camera);
 		}
