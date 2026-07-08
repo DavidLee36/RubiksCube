@@ -4,7 +4,7 @@
 
 	let cube3d;
 	let busy = $state(false); // true while the 3D is animating; disables buttons
-	let duration = $state(50); // rotation animation speed in ms
+	let duration = $state(250); // rotation animation speed in ms
 	let scrambleMin = $state(15); // fewest scramble turns
 	let scrambleMax = $state(30); // most scramble turns
 

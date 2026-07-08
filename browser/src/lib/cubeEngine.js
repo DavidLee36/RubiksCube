@@ -44,7 +44,7 @@ function whiteCross() {
 		if(isPieceSolved(piece)) continue; //already solved
 
 		// Bottom layer incorrect location, move to top
-		if(!isPieceSlotted(piece) && pieceCurrentLayer(piece) == 1) {
+		if(!isPieceSlotted(piece) && getCurrentLayer(piece) == 1) {
 			//console.log("Bottom layer incorrect location, move to top");
 			const currSlot = findPiece(cube[piece].id);
 			const currSlotFaces = Object.keys(currSlot.colors);
@@ -53,7 +53,7 @@ function whiteCross() {
 		}
 
 		// Second layer
-		if(pieceCurrentLayer(piece) == 2) {
+		if(getCurrentLayer(piece) == 2) {
 			//console.log("Second layer, moving up");
 			const currSlot = findPiece(cube[piece].id);
 			const currSlotFaces = Object.keys(currSlot.colors);
@@ -79,7 +79,7 @@ function whiteCross() {
 		}
 
 		// Third layer, move to correct slot in bottom layer
-		if(pieceCurrentLayer(piece) == 3) {
+		if(getCurrentLayer(piece) == 3) {
 			//console.log("Third layer, move to correct slot");
 			let currSlot = findPiece(cube[piece].id);
 			while(currSlot.id != cube[piece].id - 8) {
@@ -104,8 +104,56 @@ function whiteCross() {
 	}
 }
 
+/**
+ * Solve the white corners one piece at a time
+ */
 function whiteCorners() {
+	const whiteCornerPieces = ["DRF", "DLF", "DLB", "DRB"];
+	for(const piece of whiteCornerPieces) {
+		if(isPieceSolved(piece)) continue; //already solved
 
+		let currSlot;
+
+		// Piece is in the bottom layer at the incorrect location, move it up
+		if(!isPieceSlotted(piece) && getCurrentLayer(piece) == 1) {
+			currSlot = findPiece(cube[piece].id);
+			let sexyFace;
+			switch (currSlot.id) {
+				case 4:
+					sexyFace = "F";
+					break;
+				case 5:
+					sexyFace = "L";
+					break;
+				case: 6:
+					sexyFace = "B";
+					break;
+				case: 7:
+					sexyFace = "R";
+					break;
+				default:
+					console.error("Something has gone horribly wrong");
+					break;
+			}
+			sexyMove(sexyFace, "R", "U");
+		}
+
+		// In top layer, align piece above the correct slot
+		if(getCurrentLayer(piece) == 3) {
+			currSlot = findPiece(piece);
+			while(currSlot.id != cube[piece].id - 4) {
+				move("U");
+				currSlot = findPiece(piece);
+			}
+		}
+
+		// We are now either in the correct slot or directly above the correct slot
+
+		// Check if we can solve piece using left hand
+		if(getCurrentLayer(piece) == 3) {
+			
+		}
+	}
 }
 
 function secondLayer() {
@@ -454,10 +502,12 @@ export function fullMoveCycle() {
 
 /**
  * locates a given piece's current location
- * @param {number} id
- * @returns {piece} piece 
+ * @param  piece string or id
+ * @returns {piece} piece obj of the current location 
  */
-function findPiece(id) {
+function findPiece(piece) {
+	let id = piece;
+	if(typeof piece === "string") id = cube[piece].id;
 	const pieceKeys = Object.keys(cube);
 	for(const piece of pieceKeys) {
 		if (cube[piece].curr == id) return cube[piece];
@@ -480,7 +530,7 @@ function isPieceSlotted(piece) {
  * @param {string} piece 
  * @returns current layer (1,2,3 | bottom,middle,top)
  */
-function pieceCurrentLayer(piece) {
+function getCurrentLayer(piece) {
 	let currLocation = findPiece(cube[piece].id)
 	if (currLocation.id <= 7) { // corner
 		if (currLocation.id < 4) return 3; // top layer
