@@ -34,7 +34,6 @@
 	function scrambleClick() {
 		cubeEngine.clearMoveList();
 		cubeEngine.scramble(scrambleMin, scrambleMax);
-		cubeEngine.print();
 		cube3d.animateCube(duration);
 	}
 
@@ -51,7 +50,7 @@
 
 	function sexyClick() {
 		cubeEngine.reset();
-		cubeEngine.sexyMove(2, "R", "U");
+		cubeEngine.sexyMove(3, "R", "U");
 		cube3d.animateCube(duration);
 	}
 </script>

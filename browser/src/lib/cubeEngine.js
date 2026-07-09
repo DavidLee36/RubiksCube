@@ -32,13 +32,14 @@ export function solve() {
 	alignYellowCross();
 	positionYellowCorners();
 	solveYellowCorners();
+	console.log(`Solved cube in ${moveList.length} moves`);
 }
 
 /**
  * Solve the white cross one piece at a time
  */
 function whiteCross() {
-	console.log("solving white cross...");
+	console.log("Solving white cross...");
 	let whiteCrossPieces = ["DF", "DL", "DB", "DR"];
 	for(const piece of whiteCrossPieces) {
 		if(isPieceSolved(piece)) continue; //already solved
@@ -75,7 +76,7 @@ function whiteCross() {
 					console.error("horrible error solving second layer white cross situation");
 					break;
 			}
-			sexyMove(sexyFace, "R", "U");
+			sexyMove(sexyFace, "R", "U", false);
 		}
 
 		// Third layer, move to correct slot in bottom layer
@@ -99,15 +100,17 @@ function whiteCross() {
 			move(leftId);
 			move("D");
 		}
-
 		// Piece is solved
 	}
+	console.log(`Solved white cross in ${moveList.length} moves`);
 }
 
 /**
  * Solve the white corners one piece at a time
  */
 function whiteCorners() {
+	const startingMoveCount = moveList.length;
+	console.log("Solving white corners...");
 	const whiteCornerPieces = ["DRF", "DLF", "DLB", "DRB"];
 	for(const piece of whiteCornerPieces) {
 		if(isPieceSolved(piece)) continue; //already solved
@@ -125,17 +128,17 @@ function whiteCorners() {
 				case 5:
 					sexyFace = "L";
 					break;
-				case: 6:
+				case 6:
 					sexyFace = "B";
 					break;
-				case: 7:
+				case 7:
 					sexyFace = "R";
 					break;
 				default:
 					console.error("Something has gone horribly wrong");
 					break;
 			}
-			sexyMove(sexyFace, "R", "U");
+			sexyMove(sexyFace, "R", "U", false);
 		}
 
 		// In top layer, align piece above the correct slot
@@ -149,11 +152,49 @@ function whiteCorners() {
 
 		// We are now either in the correct slot or directly above the correct slot
 
-		// Check if we can solve piece using left hand
+		// Check if we can solve piece using left hand, else default to using right hand
+		// This is a shortcut to reduce move count, not entirely necessary to the solve itself
 		if(getCurrentLayer(piece) == 3) {
-			
+			let sexyFace;
+			if(piece == "DRF" && cube.URF.colors.R == "R") {
+				sexyFace = "R";
+			}else if(piece == "DLF" && cube.ULF.colors.F == "B") {
+				sexyFace = "F";
+			}else if(piece == "DLB" && cube.ULB.colors.L == "O") {
+				sexyFace = "L";
+			}else if(piece == "DRB" && cube.URB.colors.B == "G") {
+				sexyFace = "B";
+			}
+			if(sexyFace) {
+				sexyMove(sexyFace, "L", "U", false);
+			}
 		}
+
+		// Perform sexy move until piece is solved
+		while(!isPieceSolved(piece)) {
+			let sexyFace;
+			switch (piece) {
+				case "DRF":
+					sexyFace = "F";
+					break;
+				case "DLF":
+					sexyFace = "L";
+					break;
+				case "DLB":
+					sexyFace = "B";
+					break;
+				case "DRB":
+					sexyFace = "R";
+					break;
+				default:
+					console.error("Something has gone horribly wrong");
+					break;
+			}
+			sexyMove(sexyFace, "R", "U");
+		}
+		// Piece is solved
 	}
+	console.log(`Solved white corners in ${moveList.length-startingMoveCount} moves`);
 }
 
 function secondLayer() {
@@ -181,8 +222,9 @@ function solveYellowCorners() {
  * @param face str or number
  * @param {string} hand R or L
  * @param {string} top U or D
+ * @param {boolean} performLast perform the last rotation, in some instances it's not necessary
  */
-export function sexyMove(face, hand, top) {
+export function sexyMove(face, hand, top, performLast=true) {
 	if(typeof face === "string") face = faces[face];
 	if(top == "U") {
 		if(hand.toUpperCase() == "R") {
@@ -191,14 +233,14 @@ export function sexyMove(face, hand, top) {
 			move(rightFace);
 			move('U');
 			move(rightFace, false);
-			move('U', false);
+			if(performLast) move('U', false);
 		}else {
 			let leftFace = face - 1;
 			if(leftFace < 1) leftFace = 4;
 			move(leftFace, false);
 			move('U', false);
 			move(leftFace);
-			move('U');
+			if(performLast) move('U');
 		}
 	}else {
 		console.error("NOT IMPELEMENTED");
