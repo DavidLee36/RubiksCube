@@ -2,6 +2,8 @@ import * as helpers from "./helpers.js";
 
 import solvedCube from './solvedCube.json';
 
+// TODO: rework to contain color data
+// eg 'U': {'id': 0, 'color': 'Y'}
 export const faces = {
 	'U': 0,
 	'L': 1,
@@ -41,11 +43,11 @@ export function solve() {
 function whiteCross() {
 	console.log("Solving white cross...");
 	let whiteCrossPieces = ["DF", "DL", "DB", "DR"];
-	for(const piece of whiteCrossPieces) {
-		if(isPieceSolved(piece)) continue; //already solved
+	for (const piece of whiteCrossPieces) {
+		if (isPieceSolved(piece)) continue; //already solved
 
 		// Bottom layer incorrect location, move to top
-		if(!isPieceSlotted(piece) && getCurrentLayer(piece) == 1) {
+		if (!isPieceSlotted(piece) && getCurrentLayer(piece) == 1) {
 			//console.log("Bottom layer incorrect location, move to top");
 			const currSlot = findPiece(cube[piece].id);
 			const currSlotFaces = Object.keys(currSlot.colors);
@@ -54,7 +56,7 @@ function whiteCross() {
 		}
 
 		// Second layer
-		if(getCurrentLayer(piece) == 2) {
+		if (getCurrentLayer(piece) == 2) {
 			//console.log("Second layer, moving up");
 			const currSlot = findPiece(cube[piece].id);
 			const currSlotFaces = Object.keys(currSlot.colors);
@@ -80,10 +82,10 @@ function whiteCross() {
 		}
 
 		// Third layer, move to correct slot in bottom layer
-		if(getCurrentLayer(piece) == 3) {
+		if (getCurrentLayer(piece) == 3) {
 			//console.log("Third layer, move to correct slot");
 			let currSlot = findPiece(cube[piece].id);
-			while(currSlot.id != cube[piece].id - 8) {
+			while (currSlot.id != cube[piece].id - 8) {
 				move('U');
 				currSlot = findPiece(cube[piece].id);
 			}
@@ -92,11 +94,11 @@ function whiteCross() {
 		}
 
 		// Piece is now in the correct slot but not oriented correctly
-		if(!isPieceSolved(piece)) {
+		if (!isPieceSolved(piece)) {
 			move(piece.charAt(1));
 			move("D", false);
-			let leftId = faces[piece.charAt(1)]-1;
-			if(leftId == 0) leftId = 4;
+			let leftId = faces[piece.charAt(1)] - 1;
+			if (leftId == 0) leftId = 4;
 			move(leftId);
 			move("D");
 		}
@@ -112,13 +114,13 @@ function whiteCorners() {
 	const startingMoveCount = moveList.length;
 	console.log("Solving white corners...");
 	const whiteCornerPieces = ["DRF", "DLF", "DLB", "DRB"];
-	for(const piece of whiteCornerPieces) {
-		if(isPieceSolved(piece)) continue; //already solved
+	for (const piece of whiteCornerPieces) {
+		if (isPieceSolved(piece)) continue; //already solved
 
 		let currSlot;
 
 		// Piece is in the bottom layer at the incorrect location, move it up
-		if(!isPieceSlotted(piece) && getCurrentLayer(piece) == 1) {
+		if (!isPieceSlotted(piece) && getCurrentLayer(piece) == 1) {
 			currSlot = findPiece(cube[piece].id);
 			let sexyFace;
 			switch (currSlot.id) {
@@ -142,9 +144,9 @@ function whiteCorners() {
 		}
 
 		// In top layer, align piece above the correct slot
-		if(getCurrentLayer(piece) == 3) {
+		if (getCurrentLayer(piece) == 3) {
 			currSlot = findPiece(piece);
-			while(currSlot.id != cube[piece].id - 4) {
+			while (currSlot.id != cube[piece].id - 4) {
 				move("U");
 				currSlot = findPiece(piece);
 			}
@@ -154,24 +156,24 @@ function whiteCorners() {
 
 		// Check if we can solve piece using left hand, else default to using right hand
 		// This is a shortcut to reduce move count, not entirely necessary to the solve itself
-		if(getCurrentLayer(piece) == 3) {
+		if (getCurrentLayer(piece) == 3) {
 			let sexyFace;
-			if(piece == "DRF" && cube.URF.colors.R == "R") {
+			if (piece == "DRF" && cube.URF.colors.R == "R") {
 				sexyFace = "R";
-			}else if(piece == "DLF" && cube.ULF.colors.F == "B") {
+			} else if (piece == "DLF" && cube.ULF.colors.F == "B") {
 				sexyFace = "F";
-			}else if(piece == "DLB" && cube.ULB.colors.L == "O") {
+			} else if (piece == "DLB" && cube.ULB.colors.L == "O") {
 				sexyFace = "L";
-			}else if(piece == "DRB" && cube.URB.colors.B == "G") {
+			} else if (piece == "DRB" && cube.URB.colors.B == "G") {
 				sexyFace = "B";
 			}
-			if(sexyFace) {
+			if (sexyFace) {
 				sexyMove(sexyFace, "L", "U", false);
 			}
 		}
 
 		// Perform sexy move until piece is solved
-		while(!isPieceSolved(piece)) {
+		while (!isPieceSolved(piece)) {
 			let sexyFace;
 			switch (piece) {
 				case "DRF":
@@ -194,11 +196,54 @@ function whiteCorners() {
 		}
 		// Piece is solved
 	}
-	console.log(`Solved white corners in ${moveList.length-startingMoveCount} moves`);
+	console.log(`Solved white corners in ${moveList.length - startingMoveCount} moves`);
 }
 
 function secondLayer() {
+	const startingMoveCount = moveList.length;
+	console.log("Solving second layer...");
+	let secondLayerPieces = ["RF", "LF", "LB", "RB"];
 
+	while (secondLayerPieces.length > 0) {
+		for (const [idx, piece] of secondLayerPieces.entries()) {
+			let currSlot;
+			if (isPieceSolved(piece)) {
+				secondLayerPieces.splice(idx);
+				break;
+			}
+
+			// Piece is in the second layer and is the last piece being checked this loop,
+			// we are forced to move it to layer 3
+			if (getCurrentLayer(piece) == 2 && idx == secondLayerPieces.length - 1) {
+				const currSlot = findPiece(cube[piece].id);
+				let sexyFace;
+				switch (currSlot.id) {
+					case 12:
+						sexyFace = "F";
+						break;
+					case 13:
+						sexyFace = "L";
+						break;
+					case 14:
+						sexyFace = "B";
+						break;
+					case 15:
+						sexyFace = "R";
+						break;
+					default:
+						console.error("horrible error solving second layer situation");
+						break;
+				}
+				sexyMove(sexyFace, "R", "U");
+				sexyMove(getRightFace(sexyFace), "L", "U");
+			}
+
+			// Piece is in the top layer, solve it, else it will be skipped this run
+			if (getCurrentLayer(piece) == 3) {
+				// rotate the top facing color opposite it's face eg. solving blue-red and red's on top move it to green(opposite red)-yellow position
+			}
+		}
+	}
 }
 
 function yellowCross() {
@@ -224,25 +269,25 @@ function solveYellowCorners() {
  * @param {string} top U or D
  * @param {boolean} performLast perform the last rotation, in some instances it's not necessary
  */
-export function sexyMove(face, hand, top, performLast=true) {
-	if(typeof face === "string") face = faces[face];
-	if(top == "U") {
-		if(hand.toUpperCase() == "R") {
+export function sexyMove(face, hand, top, performLast = true) {
+	if (typeof face === "string") face = faces[face];
+	if (top == "U") {
+		if (hand.toUpperCase() == "R") {
 			let rightFace = face + 1;
-			if(rightFace > 4) rightFace = 1;
+			if (rightFace > 4) rightFace = 1;
 			move(rightFace);
 			move('U');
 			move(rightFace, false);
-			if(performLast) move('U', false);
-		}else {
+			if (performLast) move('U', false);
+		} else {
 			let leftFace = face - 1;
-			if(leftFace < 1) leftFace = 4;
+			if (leftFace < 1) leftFace = 4;
 			move(leftFace, false);
 			move('U', false);
 			move(leftFace);
-			if(performLast) move('U');
+			if (performLast) move('U');
 		}
-	}else {
+	} else {
 		console.error("NOT IMPELEMENTED");
 	}
 }
@@ -269,7 +314,7 @@ export function scramble(min = 15, max = 30) {
  * @param {boolean} clockwise
  */
 export function move(face, clockwise = true) {
-	if(typeof face === 'number') {
+	if (typeof face === 'number') {
 		face = Object.keys(faces)[face];
 	}
 	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
@@ -543,15 +588,45 @@ export function fullMoveCycle() {
 }
 
 /**
+ * Returns the face to the left of the current face
+ * @param {*} face string or int representation of the current face
+ * @returns {string} left face
+ */
+function getLeftFace(face) {
+	if (typeof face === 'number') {
+		face = Object.keys(faces)[face];
+	}
+	let leftId = faces[face] - 1;
+	if (leftId == 0) leftId = 4;
+
+	return leftFace;
+}
+
+/**
+ * Returns the face to the right of the current face
+ * @param {*} face string or int representation of the current face
+ * @returns {string} right face
+ */
+function getRightFace(face) {
+	if (typeof face === 'number') {
+		face = Object.keys(faces)[face];
+	}
+	let rightId = faces[face] + 1;
+	if (rightId == 5) rightId = 1;
+
+	return rightFace;
+}
+
+/**
  * locates a given piece's current location
  * @param  piece string or id
  * @returns {piece} piece obj of the current location 
  */
 function findPiece(piece) {
 	let id = piece;
-	if(typeof piece === "string") id = cube[piece].id;
+	if (typeof piece === "string") id = cube[piece].id;
 	const pieceKeys = Object.keys(cube);
-	for(const piece of pieceKeys) {
+	for (const piece of pieceKeys) {
 		if (cube[piece].curr == id) return cube[piece];
 	}
 	console.error(`Unable to locate ${id}, something has gone horribly wrong`);
@@ -577,7 +652,7 @@ function getCurrentLayer(piece) {
 	if (currLocation.id <= 7) { // corner
 		if (currLocation.id < 4) return 3; // top layer
 		return 1; // bottom layer
-	}else { // edge piece
+	} else { // edge piece
 		if (currLocation.id < 12) return 3; // top layer
 		if (currLocation.id < 16) return 2; // middle layer
 		return 1; // bottom layer
