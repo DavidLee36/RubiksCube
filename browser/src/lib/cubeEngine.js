@@ -41,10 +41,10 @@ let moveList = [];
 
 /**
  * Runner for the solve algorithm using the LBL approach
- * 1. white cross
- * 2. white corners
- * 3. 2nd layer
- * 4. yellow cross
+ * 1. white cross                  ✔
+ * 2. white corners                ✔
+ * 3. 2nd layer                    ✔
+ * 4. yellow cross                 ✔
  * 5. align yellow cross
  * 6. position yellow corners
  * 7. solve yellow corners
@@ -270,7 +270,7 @@ function secondLayer() {
 				const topColor = currSlot.colors["U"];
 				const sideColor = currSlot.colors[currFaces[1]];
 				const desiredFace = Object.values(faces).find(f => f.color == topColor).oppFace;
-				while(getCurrentFace(piece, sideColor) != desiredFace) {
+				while (getCurrentFace(piece, sideColor) != desiredFace) {
 					//console.log("aligning in top row");
 					move("U");
 				}
@@ -278,10 +278,10 @@ function secondLayer() {
 				// Perform the double sexy move to solve the piece
 				const rightFace = getRightFace(desiredFace);
 				const leftFace = getLeftFace(desiredFace);
-				if(faces[rightFace].color == sideColor) {
+				if (faces[rightFace].color == sideColor) {
 					sexyMove(rightFace, "R", "U");
 					sexyMove(getRightFace(rightFace), "L", "U");
-				}else {
+				} else {
 					sexyMove(leftFace, "L", "U");
 					sexyMove(getLeftFace(leftFace), "R", "U");
 				}
@@ -294,8 +294,67 @@ function secondLayer() {
 	console.log(`Second layer solved in ${moveList.length - startingMoveCount} moves`);
 }
 
-function yellowCross() {
+/**
+ * Helper method for yellowCros() to get the pieces currently facing yellow up in the cross
+ */
+function getCurrYellowCross() {
+	const yellowCrossPieces = ["UF", "UL", "UB", "UR"];
+	let currCross = [];
+	for (const piece of yellowCrossPieces) {
+		if (cube[piece].colors.U == "Y") currCross.push(piece);
+	}
+	return currCross;
+}
 
+/**
+ * Helper method for yellowCross(), if the yellowcross is currently in an L shape determine what
+ * the front face should be
+ */
+function getYellowLFrontFace(pieces) {
+	let frontFace;
+	if (pieces.includes("UF") && pieces.includes("UL")) return "R";
+	if (pieces.includes("UL") && pieces.includes("UB")) return "F";
+	if (pieces.includes("UB") && pieces.includes("UR")) return "L";
+	if (pieces.includes("UR") && pieces.includes("UF")) return "B";
+}
+
+/**
+ * Get the yellow cross, this step is not concerned with aligning the yellow cross,
+ * just ensuring it exists
+ */
+function yellowCross() {
+	const startingMoveCount = moveList.length;
+
+	let currYellowCross = getCurrYellowCross();
+	while (currYellowCross.length != 4) {
+		console.log(currYellowCross.length);
+
+		if (currYellowCross.length != 2) { // No L or straight line
+			//arbitrarely pick F as the face to perfrom the moves on to try produce an L or straight line
+			move("F");
+			sexyMove("F", "R", "U");
+			move("F", false);
+		} else { // Yellow cross is currently in an L or straight line
+			const idDiff = Math.abs(cube[currYellowCross[0]].id - cube[currYellowCross[1]].id);
+			if (idDiff == 2) { // Yellow cross pieces are in a line
+				console.log("line");
+				const piece = currYellowCross[0]; //arbitrary piece that has yellow on top
+				const frontFace = getLeftFace(piece.charAt(1));
+				move(frontFace);
+				sexyMove(frontFace, "R", "U");
+				move(frontFace, false);
+			} else { // Yellow cross pieces are in an L
+				console.log("L");
+				const frontFace = getYellowLFrontFace(currYellowCross);
+				move(frontFace);
+				sexyMove(frontFace, "R", "U");
+				sexyMove(frontFace, "R", "U");
+				move(frontFace, false);
+			}
+		}
+		currYellowCross = getCurrYellowCross();
+	}
+	console.log(`Yellow cross solved in ${moveList.length - startingMoveCount} moves`);
 }
 
 function alignYellowCross() {
@@ -644,8 +703,8 @@ export function fullMoveCycle() {
 function getCurrentFace(piece, color) {
 	const currSlot = findPiece(piece);
 	const colors = Object.keys(currSlot.colors);
-	for(const colori of colors) {
-		if(currSlot.colors[colori] == color) return colori;
+	for (const colori of colors) {
+		if (currSlot.colors[colori] == color) return colori;
 	}
 	console.error(`horrible things have happened looking for the face of ${piece} color ${color}`);
 	return null;
