@@ -112,7 +112,7 @@
 			const moveList = cubeEngine.getMoveList();
 			for (const move of moveList) {
 				const f = Object.keys(cubeEngine.faces).find(
-					(k) => cubeEngine.faces[k] == move.charAt(0),
+					(k) => cubeEngine.faces[k].id == move.charAt(0),
 				);
 				const d = move.charAt(1) == "1";
 

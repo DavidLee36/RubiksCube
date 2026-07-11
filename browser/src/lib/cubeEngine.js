@@ -2,15 +2,38 @@ import * as helpers from "./helpers.js";
 
 import solvedCube from './solvedCube.json';
 
-// TODO: rework to contain color data
-// eg 'U': {'id': 0, 'color': 'Y'}
+const facesArr = ["U", "L", "F", "R", "B", "D"];
 export const faces = {
-	'U': 0,
-	'L': 1,
-	'F': 2,
-	'R': 3,
-	'B': 4,
-	'D': 5
+	'U': {
+		'id': 0,
+		'color': "Y",
+		'oppFace': "D"
+	},
+	'L': {
+		'id': 1,
+		'color': "O",
+		'oppFace': "R"
+	},
+	'F': {
+		'id': 2,
+		'color': "B",
+		'oppFace': "B"
+	},
+	'R': {
+		'id': 3,
+		'color': "R",
+		'oppFace': "L"
+	},
+	'B': {
+		'id': 4,
+		'color': "G",
+		'oppFace': "F"
+	},
+	'D': {
+		'id': 5,
+		'color': "W",
+		'oppFace': "U"
+	}
 };
 
 let cube = structuredClone(solvedCube);
@@ -97,7 +120,7 @@ function whiteCross() {
 		if (!isPieceSolved(piece)) {
 			move(piece.charAt(1));
 			move("D", false);
-			let leftId = faces[piece.charAt(1)] - 1;
+			let leftId = faces[piece.charAt(1)].id - 1;
 			if (leftId == 0) leftId = 4;
 			move(leftId);
 			move("D");
@@ -208,13 +231,14 @@ function secondLayer() {
 		for (const [idx, piece] of secondLayerPieces.entries()) {
 			let currSlot;
 			if (isPieceSolved(piece)) {
-				secondLayerPieces.splice(idx);
+				secondLayerPieces.splice(idx, 1);
 				break;
 			}
 
 			// Piece is in the second layer and is the last piece being checked this loop,
 			// we are forced to move it to layer 3
 			if (getCurrentLayer(piece) == 2 && idx == secondLayerPieces.length - 1) {
+				//console.log("piece is in the second layer and is last piece, move it up");
 				const currSlot = findPiece(cube[piece].id);
 				let sexyFace;
 				switch (currSlot.id) {
@@ -240,10 +264,34 @@ function secondLayer() {
 
 			// Piece is in the top layer, solve it, else it will be skipped this run
 			if (getCurrentLayer(piece) == 3) {
-				// rotate the top facing color opposite it's face eg. solving blue-red and red's on top move it to green(opposite red)-yellow position
+				// rotate the top facing color opposite it's face eg. solving blue-red and red's on top move it to orange(opposite red)-yellow position
+				const currSlot = findPiece(piece);
+				const currFaces = Object.keys(currSlot.colors);
+				const topColor = currSlot.colors["U"];
+				const sideColor = currSlot.colors[currFaces[1]];
+				const desiredFace = Object.values(faces).find(f => f.color == topColor).oppFace;
+				while(getCurrentFace(piece, sideColor) != desiredFace) {
+					//console.log("aligning in top row");
+					move("U");
+				}
+
+				// Perform the double sexy move to solve the piece
+				const rightFace = getRightFace(desiredFace);
+				const leftFace = getLeftFace(desiredFace);
+				if(faces[rightFace].color == sideColor) {
+					sexyMove(rightFace, "R", "U");
+					sexyMove(getRightFace(rightFace), "L", "U");
+				}else {
+					sexyMove(leftFace, "L", "U");
+					sexyMove(getLeftFace(leftFace), "R", "U");
+				}
+				secondLayerPieces.splice(idx, 1); // piece is now solved, remove it from the piece arr
+				break;
 			}
 		}
 	}
+
+	console.log(`Second layer solved in ${moveList.length - startingMoveCount} moves`);
 }
 
 function yellowCross() {
@@ -267,10 +315,10 @@ function solveYellowCorners() {
  * @param face str or number
  * @param {string} hand R or L
  * @param {string} top U or D
- * @param {boolean} performLast perform the last rotation, in some instances it's not necessary
+ * @param {boolean} performLast perform the last rotation, in some instances it's not necessary, default=true
  */
 export function sexyMove(face, hand, top, performLast = true) {
-	if (typeof face === "string") face = faces[face];
+	if (typeof face === "string") face = faces[face].id;
 	if (top == "U") {
 		if (hand.toUpperCase() == "R") {
 			let rightFace = face + 1;
@@ -301,7 +349,7 @@ export function scramble(min = 15, max = 30) {
 	const turns = helpers.randIntInclusive(min, max);
 	for (let i = 0; i < turns; i++) {
 		const r = helpers.randIntInclusive(0, 5);
-		const face = Object.keys(faces).find(k => faces[k] == r);
+		const face = Object.keys(faces).find(k => faces[k].id == r);
 		const dir = Math.random() < 0.5;
 		move(face, dir)
 	}
@@ -317,14 +365,14 @@ export function move(face, clockwise = true) {
 	if (typeof face === 'number') {
 		face = Object.keys(faces)[face];
 	}
-	let moveVal = faces[face].toString() + (clockwise ? "1" : "0");
+	let moveVal = faces[face].id.toString() + (clockwise ? "1" : "0");
 	moveList.push(moveVal);
 	applyMove(cube, face, clockwise);
 }
 
 /**
  * Rotates the given cube in place. Pure core shared by the memory move() and
- * the 3D display: no logging, no module state, operates on whatever cube it's handed.
+ * the 3D display
  * @param {object} cube the cube to mutate
  * @param {string} face
  * @param {boolean} clockwise
@@ -588,33 +636,49 @@ export function fullMoveCycle() {
 }
 
 /**
+ * Determine which face a color of a piece is facing
+ * @param {*} piece 
+ * @param {*} color 
+ * @returns 
+ */
+function getCurrentFace(piece, color) {
+	const currSlot = findPiece(piece);
+	const colors = Object.keys(currSlot.colors);
+	for(const colori of colors) {
+		if(currSlot.colors[colori] == color) return colori;
+	}
+	console.error(`horrible things have happened looking for the face of ${piece} color ${color}`);
+	return null;
+}
+
+/**
  * Returns the face to the left of the current face
  * @param {*} face string or int representation of the current face
- * @returns {string} left face
+ * @returns {string} left face string
  */
 function getLeftFace(face) {
 	if (typeof face === 'number') {
-		face = Object.keys(faces)[face];
+		face = facesArr[face];
 	}
-	let leftId = faces[face] - 1;
+	let leftId = faces[face].id - 1;
 	if (leftId == 0) leftId = 4;
 
-	return leftFace;
+	return facesArr[leftId];
 }
 
 /**
  * Returns the face to the right of the current face
  * @param {*} face string or int representation of the current face
- * @returns {string} right face
+ * @returns {string} right face string
  */
 function getRightFace(face) {
 	if (typeof face === 'number') {
-		face = Object.keys(faces)[face];
+		face = facesArr[face];
 	}
-	let rightId = faces[face] + 1;
+	let rightId = faces[face].id + 1;
 	if (rightId == 5) rightId = 1;
 
-	return rightFace;
+	return facesArr[rightId];
 }
 
 /**

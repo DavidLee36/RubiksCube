@@ -50,7 +50,7 @@
 
 	function sexyClick() {
 		cubeEngine.reset();
-		cubeEngine.sexyMove(3, "R", "U");
+		cubeEngine.sexyMove(2, "R", "U");
 		cube3d.animateCube(duration);
 	}
 </script>
