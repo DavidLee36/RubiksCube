@@ -50,6 +50,7 @@ let moveList = [];
  * 7. solve yellow corners
  */
 export function solve() {
+	console.time("solveTime");
 	whiteCross();
 	whiteCorners();
 	secondLayer();
@@ -58,6 +59,7 @@ export function solve() {
 	positionYellowCorners();
 	solveYellowCorners();
 	console.log(`Solved cube in ${moveList.length} moves`);
+	console.timeEnd("solveTime");
 }
 
 /**
@@ -327,7 +329,6 @@ function yellowCross() {
 
 	let currYellowCross = getCurrYellowCross();
 	while (currYellowCross.length != 4) {
-		console.log(currYellowCross.length);
 
 		if (currYellowCross.length != 2) { // No L or straight line
 			//arbitrarely pick F as the face to perfrom the moves on to try produce an L or straight line
@@ -337,14 +338,12 @@ function yellowCross() {
 		} else { // Yellow cross is currently in an L or straight line
 			const idDiff = Math.abs(cube[currYellowCross[0]].id - cube[currYellowCross[1]].id);
 			if (idDiff == 2) { // Yellow cross pieces are in a line
-				console.log("line");
 				const piece = currYellowCross[0]; //arbitrary piece that has yellow on top
 				const frontFace = getLeftFace(piece.charAt(1));
 				move(frontFace);
 				sexyMove(frontFace, "R", "U");
 				move(frontFace, false);
 			} else { // Yellow cross pieces are in an L
-				console.log("L");
 				const frontFace = getYellowLFrontFace(currYellowCross);
 				move(frontFace);
 				sexyMove(frontFace, "R", "U");
