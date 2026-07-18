@@ -398,8 +398,36 @@ function alignYellowCross() {
 	console.log(`Align yellow cross solved in ${moveList.length - startingMoveCount} moves`);
 }
 
+/**
+ * Helper function to perform the main algorithm for positioning yellow corners
+ * @param {string} currFront
+ */
+function positionYellowCornersHelper(currFront) {
+	move("U");
+	move(getRightFace(currFront));
+	move("U", false);
+	move(getLeftFace(currFront), false);
+	move("U");
+	move(getRightFace(currFront), false);
+	move("U", false);
+	move(getLeftFace(currFront));
+}
+
 function positionYellowCorners() {
 	const startingMoveCount = moveList.length;
+	const pieces = ["URF", "URB", "ULB", "ULF"];
+	let currSlotted = piecesSlotted(pieces);
+	while (currSlotted.length != 4) {
+		let currFront = "F"; // Arbitrarely default to F
+		if(currSlotted.length > 0) { // A slotted corner will be top right of currFront
+			if(currSlotted.includes("URB")) currFront = "R";
+			if(currSlotted.includes("ULB")) currFront = "B";
+			if(currSlotted.includes("ULF")) currFront = "L";
+		}
+		positionYellowCornersHelper(currFront);
+		currSlotted = piecesSlotted(pieces);
+	}
+	console.log(`Position yellow corners solved in ${moveList.length - startingMoveCount} moves`);
 }
 
 function solveYellowCorners() {
@@ -415,7 +443,7 @@ function solveYellowCorners() {
  */
 export function sexyMove(face, hand, top, performLast = true) {
 	if (typeof face === "string") face = faces[face].id;
-	if (top == "U") {
+	if (top == "U") { // Yellow on top
 		if (hand.toUpperCase() == "R") {
 			let rightFace = face + 1;
 			if (rightFace > 4) rightFace = 1;
@@ -431,7 +459,7 @@ export function sexyMove(face, hand, top, performLast = true) {
 			move(leftFace);
 			if (performLast) move('U');
 		}
-	} else {
+	} else { // White on top
 		console.error("NOT IMPELEMENTED");
 	}
 }
@@ -835,7 +863,7 @@ function isPieceSolved(piece) {
 }
 
 /**
- * Given an array of pieces, return an subset of solved pieces
+ * Given an array of pieces, return a subset of solved pieces
  * @param {Array} pieces 
  * @returns {Array}
  */
@@ -845,6 +873,19 @@ function piecesSolved(pieces) {
 		if (isPieceSolved(piece)) solved.push(piece);
 	}
 	return solved;
+}
+
+/**
+ * Given an array of pieces, return a subset of slotted pieces
+ * @param {Array} pieces 
+ * @returns {Array}
+ */
+function piecesSlotted(pieces) {
+	let slotted = [];
+	for (const piece of pieces) {
+		if (isPieceSlotted(piece)) slotted.push(piece);
+	}
+	return slotted;
 }
 
 /**
