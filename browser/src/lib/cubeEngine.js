@@ -356,16 +356,54 @@ function yellowCross() {
 	console.log(`Yellow cross solved in ${moveList.length - startingMoveCount} moves`);
 }
 
-function alignYellowCross() {
+/**
+ * perform the main algorithm of aligning the yellow cross
+ * @param {string} currFront
+ */
+function alignYellowCrossHelper(currFront) {
+	move(getRightFace(currFront));
+	move("U");
+	move(getRightFace(currFront), false);
+	move("U");
+	move(getRightFace(currFront));
+	move("U", false);
+	move("U", false);
+	move(getRightFace(currFront), false);
+}
 
+function alignYellowCross() {
+	const startingMoveCount = moveList.length;
+	const pieces = ["UF", "UR", "UB", "UL"];
+	while (piecesSolved(pieces).length != 4) { // Repeat until yellow cross is aligned
+		let rotations = 0;
+		while (rotations < 4) { // Rotate up to 4 times to try and find 2 solved pieces
+			let currSolved = piecesSolved(pieces);
+			if (currSolved.length == 2) { // There are 2 solved pieces and they're either adjacent or opposite
+				let currFront = "F";
+				if (currSolved.includes("UF") && currSolved.includes("UB")) currFront = "R";
+				if (currSolved.includes("UF") && currSolved.includes("UR")) currFront = "L";
+				if (currSolved.includes("UF") && currSolved.includes("UL")) currFront = "B";
+				if (currSolved.includes("UL") && currSolved.includes("UB")) currFront = "R";
+				alignYellowCrossHelper(currFront);
+			}
+			if (piecesSolved(pieces).length == 4) {
+				console.log(`Align yellow cross solved in ${moveList.length - startingMoveCount} moves`);
+				return;
+			}
+			move("U");
+			rotations++;
+		}
+		alignYellowCrossHelper("F"); // After 4 rotations we didn't find 2 solved pieces, arbitrarely apply the helper
+	}
+	console.log(`Align yellow cross solved in ${moveList.length - startingMoveCount} moves`);
 }
 
 function positionYellowCorners() {
-
+	const startingMoveCount = moveList.length;
 }
 
 function solveYellowCorners() {
-
+	const startingMoveCount = moveList.length;
 }
 
 /**
@@ -794,6 +832,19 @@ function isPieceSolved(piece) {
 		}
 	}
 	return true;
+}
+
+/**
+ * Given an array of pieces, return an subset of solved pieces
+ * @param {Array} pieces 
+ * @returns {Array}
+ */
+function piecesSolved(pieces) {
+	let solved = [];
+	for (const piece of pieces) {
+		if (isPieceSolved(piece)) solved.push(piece);
+	}
+	return solved;
 }
 
 /**

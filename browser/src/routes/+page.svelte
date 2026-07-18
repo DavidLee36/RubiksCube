@@ -125,7 +125,7 @@
 			<button class="action solve" disabled={busy} onclick={solveClick}>Solve</button>
 			<button class="action cycle" disabled={busy} onclick={cycleClick}>Cycle</button>
 			<button class="action reset" disabled={busy} onclick={resetClick}>Reset</button>
-			<button class="action sexy" disabled={busy} onclick={sexyClick}>Sexy Move</button>
+			<button class="action sexy" disabled={busy} onclick={sexyClick}>Cool Move</button>
 			<button class="action ghost" disabled={busy} onclick={() => cubeEngine.print()}>Print</button>
 		</div>
 	</section>
