@@ -38,6 +38,7 @@ export const faces = {
 
 let cube = structuredClone(solvedCube);
 let moveList = [];
+let compressedMoveList = [];
 
 /**
  * Runner for the solve algorithm using the LBL approach
@@ -47,7 +48,7 @@ let moveList = [];
  * 4. yellow cross                 ✔
  * 5. align yellow cross           ✔
  * 6. position yellow corners      ✔
- * 7. solve yellow corners
+ * 7. solve yellow corners         ✔
  */
 export function solve() {
 	console.time("solveTime");
@@ -60,6 +61,8 @@ export function solve() {
 	solveYellowCorners();
 	console.log(`Solved cube in ${moveList.length} moves`);
 	console.timeEnd("solveTime");
+	compressMoveList();
+	console.log(`Un-optimized: ${moveList.length}\nOptimized: ${compressedMoveList.length}`);
 }
 
 /**
@@ -436,13 +439,13 @@ function solveYellowCorners() {
 	const nonSolved = Object.keys(pieces).filter(piece => !piecesSolved(Object.keys(pieces)).includes(piece));
 	for (const piece of nonSolved) {
 		while (findPiece(piece).id != 0) move("U");
-		while((cube.URF.colors.F != pieces[piece])) {
+		while ((cube.URF.colors.F != pieces[piece])) {
 			sexyMove("R", "R", "D");
 			sexyMove("R", "R", "D");
 		}
 	}
 
-	while(!isCubeSolved().solved) move("U"); // SOLVE THE CUBE
+	while (!isCubeSolved().solved) move("U"); // SOLVE THE CUBE
 
 	console.log(`Solve yellow corners solved in ${moveList.length - startingMoveCount} moves`);
 }
@@ -931,6 +934,33 @@ export function isCubeSolved() {
 }
 
 /**
+ * Reduce the amount of moves in moveList by removing redundant moves and converting 3x identical moves
+ */
+function compressMoveList() {
+	compressedMoveList = [];
+	let i = 0;
+	while (i < moveList.length) {
+		if (i < moveList.length-4 && (moveList[i] == moveList[i + 1] && moveList[i] == moveList[i + 2] && moveList[i] == moveList[i + 3])) {
+			// 4 consecutive moves are identical, don't push anything
+			i=i+4;
+		} else if (i < moveList.length-3 && (moveList[i] == moveList[i + 1] && moveList[i] == moveList[i + 2])) {
+			// 3 consecutive moves are identical, push one inversed move
+			let dir = moveList[i].charAt(1);
+			dir = dir == 0 ? 1 : 0;
+			compressedMoveList.push(moveList[i].charAt(0)+dir);
+			i=i+3;
+		} else if (i < moveList.length-2 && (moveList[i].charAt(0) == moveList[i+1].charAt(0) && moveList[i].charAt(1) != moveList[i+1].charAt(1))) {
+			// 2 consecutive moves are inversed, don't push anything
+			i=i+2;
+		}else {
+			// no way to compress the next few moves
+			compressedMoveList.push(moveList[i]);
+			i++;
+		}
+	}
+}
+
+/**
  * print the current state of the cube as well as it's current solved state
  */
 export function print() {
@@ -949,6 +979,10 @@ export function reset() {
 
 export function getMoveList() {
 	return [...moveList];
+}
+
+export function getCompressedMoveList() {
+	return [...compressedMoveList];
 }
 
 export function clearMoveList() {

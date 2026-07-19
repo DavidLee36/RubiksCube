@@ -105,11 +105,11 @@
 		});
 	}
 
-	export async function animateCube(duration) {
+	export async function animateCube(duration, isSolve=false) {
 		if (busy) return; // ignore new triggers while a sequence is playing
 		busy = true;
 		try {
-			const moveList = cubeEngine.getMoveList();
+			const moveList = isSolve ? cubeEngine.getCompressedMoveList() : cubeEngine.getMoveList();
 			for (const move of moveList) {
 				const f = Object.keys(cubeEngine.faces).find(
 					(k) => cubeEngine.faces[k].id == move.charAt(0),

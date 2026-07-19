@@ -40,7 +40,7 @@
 	function solveClick() {
 		cubeEngine.clearMoveList();
 		cubeEngine.solve();
-		cube3d.animateCube(duration);
+		cube3d.animateCube(duration, true);
 	}
 
 	function resetClick() {
