@@ -59,7 +59,6 @@ export function solve() {
 	alignYellowCross();
 	positionYellowCorners();
 	solveYellowCorners();
-	console.log(`Solved cube in ${moveList.length} moves`);
 	console.timeEnd("solveTime");
 	compressMoveList();
 	console.log(`Un-optimized: ${moveList.length}\nOptimized: ${compressedMoveList.length}`);
