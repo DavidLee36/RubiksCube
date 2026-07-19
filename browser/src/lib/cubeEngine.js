@@ -45,8 +45,8 @@ let moveList = [];
  * 2. white corners                ✔
  * 3. 2nd layer                    ✔
  * 4. yellow cross                 ✔
- * 5. align yellow cross
- * 6. position yellow corners
+ * 5. align yellow cross           ✔
+ * 6. position yellow corners      ✔
  * 7. solve yellow corners
  */
 export function solve() {
@@ -419,10 +419,10 @@ function positionYellowCorners() {
 	let currSlotted = piecesSlotted(pieces);
 	while (currSlotted.length != 4) {
 		let currFront = "F"; // Arbitrarely default to F
-		if(currSlotted.length > 0) { // A slotted corner will be top right of currFront
-			if(currSlotted.includes("URB")) currFront = "R";
-			if(currSlotted.includes("ULB")) currFront = "B";
-			if(currSlotted.includes("ULF")) currFront = "L";
+		if (currSlotted.length > 0) { // A slotted corner will be top right of currFront
+			if (currSlotted.includes("URB")) currFront = "R";
+			if (currSlotted.includes("ULB")) currFront = "B";
+			if (currSlotted.includes("ULF")) currFront = "L";
 		}
 		positionYellowCornersHelper(currFront);
 		currSlotted = piecesSlotted(pieces);
@@ -432,6 +432,19 @@ function positionYellowCorners() {
 
 function solveYellowCorners() {
 	const startingMoveCount = moveList.length;
+	const pieces = { "URF": "B", "URB": "R", "ULB": "G", "ULF": "O" };
+	const nonSolved = Object.keys(pieces).filter(piece => !piecesSolved(Object.keys(pieces)).includes(piece));
+	for (const piece of nonSolved) {
+		while (findPiece(piece).id != 0) move("U");
+		while((cube.URF.colors.F != pieces[piece])) {
+			sexyMove("R", "R", "D");
+			sexyMove("R", "R", "D");
+		}
+	}
+
+	while(!isCubeSolved().solved) move("U"); // SOLVE THE CUBE
+
+	console.log(`Solve yellow corners solved in ${moveList.length - startingMoveCount} moves`);
 }
 
 /**
@@ -445,22 +458,32 @@ export function sexyMove(face, hand, top, performLast = true) {
 	if (typeof face === "string") face = faces[face].id;
 	if (top == "U") { // Yellow on top
 		if (hand.toUpperCase() == "R") {
-			let rightFace = face + 1;
-			if (rightFace > 4) rightFace = 1;
+			let rightFace = getRightFace(face);
 			move(rightFace);
 			move('U');
 			move(rightFace, false);
 			if (performLast) move('U', false);
 		} else {
-			let leftFace = face - 1;
-			if (leftFace < 1) leftFace = 4;
+			let leftFace = getLeftFace(face);
 			move(leftFace, false);
 			move('U', false);
 			move(leftFace);
 			if (performLast) move('U');
 		}
 	} else { // White on top
-		console.error("NOT IMPELEMENTED");
+		if (hand.toUpperCase() == "R") {
+			let leftFace = getLeftFace(face);
+			move(leftFace);
+			move("D");
+			move(leftFace, false);
+			move("D", false);
+		} else { // Never need this in LBL solve
+			let rightFace = getrightFace(face);
+			move(rightFace, false);
+			move("D", false);
+			move(rightFace);
+			move("D");
+		}
 	}
 }
 
