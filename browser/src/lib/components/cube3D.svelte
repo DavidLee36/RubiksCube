@@ -62,10 +62,10 @@
 	}
 
 	/**
-	 * Visually rotates one face's layer by 90°, then snaps the pieces back to
+	 * Visually rotates one face's layer, then snaps the pieces back to
 	 * their home slots. Resolves when the spin finishes.
 	 */
-	function animateMove(face, clockwise, duration) {
+	function animateMove(face, clockwise, ninety, duration) {
 		return new Promise((resolve) => {
 			const axis = moveAxis[face];
 			// The 9 meshes currently sitting in this face's slice.
@@ -73,7 +73,7 @@
 				(m) => Math.round(m.position[axis]) === layerCoord[face],
 			);
 			const targetAngle =
-				cwSign[face] * (clockwise ? 1 : -1) * (Math.PI / 2);
+				cwSign[face] * (clockwise ? 1 : -1) * (Math.PI / (ninety ? 2 : 1));
 
 			// A temporary pivot at the cube's center. Adding it inside cubeGroup
 			// lets the turning layer inherit the cube's overall orientation.
@@ -109,15 +109,17 @@
 		if (busy) return; // ignore new triggers while a sequence is playing
 		busy = true;
 		try {
-			const moveList = isSolve ? cubeEngine.getCompressedMoveList() : cubeEngine.getMoveList();
+			const moveList = isSolve ? cubeEngine.getOptimizedMoveList() : cubeEngine.getMoveList();
 			for (const move of moveList) {
 				const f = Object.keys(cubeEngine.faces).find(
 					(k) => cubeEngine.faces[k].id == move.charAt(0),
 				);
-				const d = move.charAt(1) == "1";
+				const d = move.charAt(1) == "1" || move.charAt(1) == "3";
+				const ninety = move.charAt(1) == "0" || move.charAt(1) == "1";
 
-				await animateMove(f, d, duration); // spin the layer (pre-move colors shown)
+				await animateMove(f, d, ninety, duration); // spin the layer (pre-move colors shown)
 				cubeEngine.applyMove(displayCube, f, d); // advance the display cube
+				if(!ninety) cubeEngine.applyMove(displayCube, f, d);
 				updateColors(); // repaint into the post-move colors
 			}
 		} finally {

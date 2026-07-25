@@ -38,7 +38,7 @@ export const faces = {
 
 let cube = structuredClone(solvedCube);
 let moveList = [];
-let compressedMoveList = [];
+let optimizedMoveList = [];
 
 /**
  * Runner for the solve algorithm using the LBL approach
@@ -60,8 +60,8 @@ export function solve() {
 	positionYellowCorners();
 	solveYellowCorners();
 	console.timeEnd("solveTime");
-	compressMoveList();
-	console.log(`Un-optimized: ${moveList.length}\nOptimized: ${compressedMoveList.length}`);
+	optimizeMoveList();
+	console.log(`Un-optimized: ${moveList.length} - ${moveList}\nOptimized: ${optimizedMoveList.length} - ${optimizedMoveList}`);
 }
 
 /**
@@ -935,25 +935,31 @@ export function isCubeSolved() {
 /**
  * Reduce the amount of moves in moveList by removing redundant moves and converting 3x identical moves
  */
-function compressMoveList() {
-	compressedMoveList = [];
+function optimizeMoveList() {
+	optimizedMoveList = [];
 	let i = 0;
 	while (i < moveList.length) {
 		if (i < moveList.length-4 && (moveList[i] == moveList[i + 1] && moveList[i] == moveList[i + 2] && moveList[i] == moveList[i + 3])) {
 			// 4 consecutive moves are identical, don't push anything
 			i=i+4;
-		} else if (i < moveList.length-3 && (moveList[i] == moveList[i + 1] && moveList[i] == moveList[i + 2])) {
+		} else if (i <= moveList.length-3 && (moveList[i] == moveList[i + 1] && moveList[i] == moveList[i + 2])) {
 			// 3 consecutive moves are identical, push one inversed move
 			let dir = moveList[i].charAt(1);
 			dir = dir == 0 ? 1 : 0;
-			compressedMoveList.push(moveList[i].charAt(0)+dir);
+			optimizedMoveList.push(moveList[i].charAt(0)+dir);
 			i=i+3;
-		} else if (i < moveList.length-2 && (moveList[i].charAt(0) == moveList[i+1].charAt(0) && moveList[i].charAt(1) != moveList[i+1].charAt(1))) {
+		} else if (i <= moveList.length-2 && (moveList[i].charAt(0) == moveList[i+1].charAt(0) && moveList[i].charAt(1) != moveList[i+1].charAt(1))) {
 			// 2 consecutive moves are inversed, don't push anything
 			i=i+2;
-		}else {
-			// no way to compress the next few moves
-			compressedMoveList.push(moveList[i]);
+		} else if(i <= moveList.length-2 && (moveList[i] == moveList[i+1])) {
+			// 2 consecutive moves are identical, push 1 180deg turn
+			let dir = parseInt(moveList[i].charAt(1))+2;
+			let move = moveList[i].charAt(0) + String(dir);
+			optimizedMoveList.push(move);
+			i=i+2;
+		} else {
+			// no way to optimize the next few moves
+			optimizedMoveList.push(moveList[i]);
 			i++;
 		}
 	}
@@ -980,8 +986,8 @@ export function getMoveList() {
 	return [...moveList];
 }
 
-export function getCompressedMoveList() {
-	return [...compressedMoveList];
+export function getOptimizedMoveList() {
+	return [...optimizedMoveList];
 }
 
 export function clearMoveList() {
