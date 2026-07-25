@@ -37,6 +37,12 @@ export const faces = {
 };
 
 let cube = structuredClone(solvedCube);
+
+// Move lists are an array of moves in such a way that both the browser and hardware can easily understand, each move is represented by 2 numbers <motor><direction/degrees> ex. 02, 31, 53 ...
+
+//<motor> represented 0-5 corresponding to the 6 motors/colors of the cube; top, left, front, right, back, bottom
+//<direction/degrees> represented 0-3 | 0 = 90deg CCW | 1 = 90deg CW | 2 = 180deg CCW | 3 = 180deg CW |
+//ex. 02 = turn the top motor/face 180deg CCW | 31 = turn the right motor/face 90deg CW
 let moveList = [];
 let optimizedMoveList = [];
 
