@@ -7,6 +7,7 @@
 	let duration = $state(250); // rotation animation speed in ms
 	let scrambleMin = $state(15); // fewest scramble turns
 	let scrambleMax = $state(30); // most scramble turns
+	let promptSend = $state(false); // prompt to send moves to robot
 
 	// Per-face turn buttons. Colors are just a nice palette, not the cube's.
 	const moveFaces = ["U", "D", "L", "R", "F", "B"];
@@ -18,6 +19,12 @@
 		F: "#5b8def", // blue
 		B: "#27ae60", // green
 	};
+
+	function promptSendMoves(optimized=false) {
+		if (!promptSend) return;
+		const moveList = optimized ? cubeEngine.getOptimizedMoveList() : cubeEngine.getMoveList();
+		const send = confirm(`Send moves? Length: ${moveList.length}`);
+	}
 
 	function moveClick(face, dir) {
 		cubeEngine.clearMoveList();
@@ -31,16 +38,18 @@
 		cube3d.animateCube(duration);
 	}
 
-	function scrambleClick() {
+	async function scrambleClick() {
 		cubeEngine.clearMoveList();
 		cubeEngine.scramble(scrambleMin, scrambleMax);
-		cube3d.animateCube(duration);
+		await cube3d.animateCube(duration);
+		promptSendMoves();
 	}
 
-	function solveClick() {
+	async function solveClick() {
 		cubeEngine.clearMoveList();
 		cubeEngine.solve();
-		cube3d.animateCube(duration, true);
+		await cube3d.animateCube(duration, true);
+		promptSendMoves(true);
 	}
 
 	function resetClick() {
@@ -99,6 +108,15 @@
 					/>
 				</label>
 			</div>
+
+			<label class="prompt-setting">
+				<span class="setting-label">Send</span>
+				<input
+					class="prompt-setting-input"
+					type="checkbox"
+					bind:checked={promptSend}	
+				/>
+			</label>
 		</div>
 	</section>
 
@@ -212,6 +230,24 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+	}
+
+	.prompt-setting {
+		display: flex;
+		flex-direction: row;
+		padding: 0.5rem 0.6rem;
+		border-radius: 0.55rem;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: #e6e8ee;
+		font: inherit;
+		font-size: 0.85rem;
+		color-scheme: dark; /* native number spinner matches dark theme */
+		transition: border-color 0.15s ease;
+	}
+
+	.prompt-setting-input {
+		margin-left: 10px;
 	}
 
 	.setting-label {
