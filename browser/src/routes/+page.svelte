@@ -1,13 +1,23 @@
 <script>
 	import * as cubeEngine from "$lib/cubeEngine";
 	import Cube3D from "$lib/components/cube3D.svelte";
+	import * as comm from "$lib/comm";
+	import { onMount } from "svelte";
+
+	onMount(() => {
+		setInterval(async () => {
+			await updateRobotStatus();
+		}, 1000);
+	})
 
 	let cube3d;
 	let busy = $state(false); // true while the 3D is animating; disables buttons
 	let duration = $state(250); // rotation animation speed in ms
 	let scrambleMin = $state(15); // fewest scramble turns
 	let scrambleMax = $state(30); // most scramble turns
-	let promptSend = $state(false); // prompt to send moves to robot
+	let promptSend = $state(true); // prompt to send moves to robot
+	let robotStatus = $state("N/A");
+	let robotStatusDesc = $state("");
 
 	// Per-face turn buttons. Colors are just a nice palette, not the cube's.
 	const moveFaces = ["U", "D", "L", "R", "F", "B"];
@@ -20,10 +30,21 @@
 		B: "#27ae60", // green
 	};
 
-	function promptSendMoves(optimized=false) {
+	async function updateRobotStatus() {
+		const currStatus = await comm.getRobotStatus();
+		robotStatus = currStatus[0];
+		robotStatusDesc = currStatus[1];
+	}
+
+	function promptSendMoves(optimized = false) {
 		if (!promptSend) return;
-		const moveList = optimized ? cubeEngine.getOptimizedMoveList() : cubeEngine.getMoveList();
+		const moveList = optimized
+			? cubeEngine.getOptimizedMoveList()
+			: cubeEngine.getMoveList();
 		const send = confirm(`Send moves? Length: ${moveList.length}`);
+		if(send) {
+			comm.sendMoves();
+		}
 	}
 
 	function moveClick(face, dir) {
@@ -32,10 +53,11 @@
 		cube3d.animateCube(duration);
 	}
 
-	function cycleClick() {
+	async function cycleClick() {
 		cubeEngine.clearMoveList();
 		cubeEngine.fullMoveCycle();
-		cube3d.animateCube(duration);
+		await cube3d.animateCube(duration);
+		promptSendMoves();
 	}
 
 	async function scrambleClick() {
@@ -66,106 +88,155 @@
 
 <Cube3D bind:this={cube3d} bind:busy />
 
-<main class="panel">
-	<header class="titles">
-		<h1>Rubik's Cube</h1>
-		<p class="subtitle">Layer-by-layer solver</p>
-	</header>
+<main>
+	<section class="panel">
+		<header class="titles">
+			<h1>Rubik's Cube</h1>
+			<p class="subtitle">Layer-by-layer solver</p>
+		</header>
 
-	<section>
-		<h2>Settings</h2>
-		<div class="settings-body">
-			<label class="setting">
-				<span class="setting-label">Turn duration (ms)</span>
-				<input
-					class="setting-input"
-					type="number"
-					min="50"
-					step="10"
-					bind:value={duration}
-				/>
-			</label>
-
-			<div class="setting-row">
+		<section>
+			<h2>Settings</h2>
+			<div class="settings-body">
 				<label class="setting">
-					<span class="setting-label">Scramble min</span>
+					<span class="setting-label">Turn duration (ms)</span>
 					<input
 						class="setting-input"
 						type="number"
-						min="1"
-						step="1"
-						bind:value={scrambleMin}
+						min="50"
+						step="10"
+						bind:value={duration}
 					/>
 				</label>
-				<label class="setting">
-					<span class="setting-label">Scramble max</span>
+
+				<div class="setting-row">
+					<label class="setting">
+						<span class="setting-label">Scramble min</span>
+						<input
+							class="setting-input"
+							type="number"
+							min="1"
+							step="1"
+							bind:value={scrambleMin}
+						/>
+					</label>
+					<label class="setting">
+						<span class="setting-label">Scramble max</span>
+						<input
+							class="setting-input"
+							type="number"
+							min="1"
+							step="1"
+							bind:value={scrambleMax}
+						/>
+					</label>
+				</div>
+
+				<label class="prompt-setting">
+					<span class="setting-label">Send</span>
 					<input
-						class="setting-input"
-						type="number"
-						min="1"
-						step="1"
-						bind:value={scrambleMax}
+						class="prompt-setting-input"
+						type="checkbox"
+						bind:checked={promptSend}
 					/>
 				</label>
 			</div>
+		</section>
 
-			<label class="prompt-setting">
-				<span class="setting-label">Send</span>
-				<input
-					class="prompt-setting-input"
-					type="checkbox"
-					bind:checked={promptSend}	
-				/>
-			</label>
-		</div>
+		<section>
+			<h2>Moves</h2>
+			<div class="moves">
+				{#each moveFaces as face}
+					<div class="move-row" style="--c: {faceColors[face]};">
+						<button
+							class="face cw"
+							disabled={busy}
+							onclick={() => moveClick(face, true)}
+						>
+							{face}
+						</button>
+						<button
+							class="face ccw"
+							disabled={busy}
+							onclick={() => moveClick(face, false)}
+						>
+							{face}′
+						</button>
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		<section>
+			<h2>Actions</h2>
+			<div class="actions">
+				<button
+					class="action scramble"
+					disabled={busy}
+					onclick={scrambleClick}>Scramble</button
+				>
+				<button
+					class="action solve"
+					disabled={busy}
+					onclick={solveClick}>Solve</button
+				>
+				<button
+					class="action cycle"
+					disabled={busy}
+					onclick={cycleClick}>Cycle</button
+				>
+				<button
+					class="action reset"
+					disabled={busy}
+					onclick={resetClick}>Reset</button
+				>
+				<button class="action sexy" disabled={busy} onclick={sexyClick}
+					>Sexy Move</button
+				>
+				<button
+					class="action ghost"
+					disabled={busy}
+					onclick={() => cubeEngine.print()}>Print</button
+				>
+			</div>
+		</section>
 	</section>
-
-	<section>
-		<h2>Moves</h2>
-		<div class="moves">
-			{#each moveFaces as face}
-				<div class="move-row" style="--c: {faceColors[face]};">
-					<button class="face cw" disabled={busy} onclick={() => moveClick(face, true)}>
-						{face}
-					</button>
-					<button class="face ccw" disabled={busy} onclick={() => moveClick(face, false)}>
-						{face}′
-					</button>
-				</div>
-			{/each}
-		</div>
-	</section>
-
-	<section>
-		<h2>Actions</h2>
-		<div class="actions">
-			<button class="action scramble" disabled={busy} onclick={scrambleClick}>Scramble</button>
-			<button class="action solve" disabled={busy} onclick={solveClick}>Solve</button>
-			<button class="action cycle" disabled={busy} onclick={cycleClick}>Cycle</button>
-			<button class="action reset" disabled={busy} onclick={resetClick}>Reset</button>
-			<button class="action sexy" disabled={busy} onclick={sexyClick}>Sexy Move</button>
-			<button class="action ghost" disabled={busy} onclick={() => cubeEngine.print()}>Print</button>
-		</div>
+	<section class="panel">
+		<header class="titles">
+			<h1>Robot</h1>
+			<h2>Status: <span class="robot-status">{robotStatus}</span></h2>
+			<p class="robot-status-desc">{robotStatusDesc}</p>
+		</header>
 	</section>
 </main>
 
 <style>
-	.panel {
+	main {
 		position: fixed;
 		top: 1.5rem;
 		left: 1.5rem;
-		width: 15rem;
-		padding: 1.25rem;
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		gap: 1.25rem;
+		color: #e6e8ee;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
+	}
+
+	.panel {
 		border-radius: 1rem;
 		background: rgba(18, 20, 26, 0.72);
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		backdrop-filter: blur(12px);
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-		color: #e6e8ee;
-		font-family: system-ui, -apple-system, sans-serif;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding: 1.25rem;
+		width: 15rem;
+		height: fit-content;
 	}
 
 	.titles h1 {
@@ -195,7 +266,10 @@
 		border: none;
 		border-radius: 0.55rem;
 		font-weight: 600;
-		transition: transform 0.06s ease, filter 0.15s ease, background 0.15s ease;
+		transition:
+			transform 0.06s ease,
+			filter 0.15s ease,
+			background 0.15s ease;
 	}
 
 	button:hover {
@@ -316,15 +390,34 @@
 		color: #fff;
 	}
 
-	.action.scramble { background: #e08a2b; }
-	.action.solve    { background: #24a148; }
-	.action.cycle    { background: #3a6df0; }
-	.action.reset    { background: #d83a4a; }
-	.action.sexy     { background: #f1008d; }
+	.action.scramble {
+		background: #e08a2b;
+	}
+	.action.solve {
+		background: #24a148;
+	}
+	.action.cycle {
+		background: #3a6df0;
+	}
+	.action.reset {
+		background: #d83a4a;
+	}
+	.action.sexy {
+		background: #f1008d;
+	}
 
 	.action.ghost {
 		background: rgba(255, 255, 255, 0.06);
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		color: #c7ccd6;
+	}
+
+	.robot-status {
+		color: #c7ccd6;
+		font-size: 1rem;
+	}
+
+	.error {
+		color: #d83a4a;
 	}
 </style>

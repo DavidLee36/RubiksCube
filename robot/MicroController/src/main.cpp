@@ -7,13 +7,15 @@
 
 WebServer server(80);
 
+String currStatus = "IDLE";
+
 void send(int code, const String& body) {
 	server.sendHeader("Access-Control-Allow-Origin", "*");
 	server.send(code, "text/plain", body);
 }
 
 void statusResponse() {
-	send(200, "IDLE 0 0");
+	send(200, currStatus);
 }
 
 void movesResponse() {
@@ -21,6 +23,7 @@ void movesResponse() {
 	Serial.print("got moves: ");
 	Serial.println(body);
 	send(202, "accepted");
+	currStatus = "PROCESSING MOVES";
 }
 
 void setupWIFI() {
