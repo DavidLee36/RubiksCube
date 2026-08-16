@@ -36,14 +36,19 @@
 		robotStatusDesc = currStatus[1];
 	}
 
-	function promptSendMoves(optimized = false) {
+	async function promptSendMoves(optimized = false) {
 		if (!promptSend) return;
 		const moveList = optimized
 			? cubeEngine.getOptimizedMoveList()
 			: cubeEngine.getMoveList();
 		const send = confirm(`Send moves? Length: ${moveList.length}`);
 		if(send) {
-			comm.sendMoves();
+			let currStatus = await comm.getRobotStatus(); // re-check status to avoid checking a stale state
+			if(currStatus[0] == "IDLE") {
+				comm.sendMoves();
+			}else {
+				alert(`Unable to send moves when robot is not idle, current state: ${currStatus[0]}`);
+			}
 		}
 	}
 
@@ -415,9 +420,5 @@
 	.robot-status {
 		color: #c7ccd6;
 		font-size: 1rem;
-	}
-
-	.error {
-		color: #d83a4a;
 	}
 </style>
