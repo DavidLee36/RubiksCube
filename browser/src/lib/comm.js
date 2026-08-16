@@ -49,7 +49,7 @@ async function postRequest(path, bodyStr) {
  * @param {Array} moveList 
  */
 export async function sendMoves(moveList) {
-	const response = await postRequest("moves", "01 23 45 85");
+	const response = await postRequest("moves", "0911223300112233");
 	if(response) {
 		const data = await response.text();
 		console.log(data);
@@ -69,4 +69,8 @@ export async function getRobotStatus() {
 		status[1] = "";
 	}
 	return status;
+}
+
+export async function resetRobot() {
+	await getRequest("reset");
 }

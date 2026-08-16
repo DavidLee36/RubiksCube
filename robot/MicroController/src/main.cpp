@@ -13,38 +13,53 @@ String currStatus = "IDLE";
 // Storing moves as strings because ex. move 02 wouldn't work as an int
 std::vector<String> movesVector;
 
+void printMoves()
+{
+	for (const String &move : movesVector)
+	{
+		Serial.print(move);
+		Serial.print(", ");
+	}
+	Serial.println();
+}
+
 /// @brief Populate movesVector from string provided by Svelte,
 /// moves are transmitted with no seperator, ex. 023143...
-/// @param movesStr 
-void populateMoves(String movesStr)
+/// @param movesStr
+bool populateMoves(const String &movesStr)
 {
 	movesVector.clear();
+	if (movesStr.length() == 0)
+	{
+		currStatus = "ERROR move string is empty";
+		return false;
+	}
+	if (movesStr.length() % 2 != 0)
+	{
+		currStatus = "ERROR invalid number of characters in move string";
+		return false;
+	}
 	int idx = 0;
-	while (idx < movesStr.length() - 2)
+	while (idx < movesStr.length() - 1)
 	{
 		// Ensure move is valid
-		try
+		int motor = movesStr.charAt(idx) - '0';
+		int dir = movesStr.charAt(idx + 1) - '0';
+		if (motor > 5 || motor < 0 || dir > 3 || dir < 0)
 		{
-			int motor = movesStr.charAt(idx) - '0';
-			int dir = movesStr.charAt(idx + 1) - '0';
-			if (motor > 5 || motor < 0 || dir > 3 || dir < 0)
-			{
-				throw new std::exception;
-			}
-		}
-		catch (const std::exception &e)
-		{
-			// Do not automatically clear and reset the moves list, we want to make sure Svelte is
-			// aware on the next /status call
 			currStatus = "ERROR invalid move detected";
-			return;
+			movesVector.clear();
+			return false;
 		}
-
 		// push move to movesVector
-		movesVector.push_back(movesStr.substring(idx, idx+2));
-		idx++;
+		movesVector.push_back(movesStr.substring(idx, idx + 2));
+		idx += 2;
 	}
-	currStatus = "POPULATED MOVES " + movesVector.size();
+	String populated = "POPULATED MOVES " + String(movesVector.size());
+	currStatus = populated;
+	Serial.println(populated);
+	printMoves();
+	return true;
 }
 
 void send(int code, const String &body)
@@ -65,14 +80,22 @@ void movesResponse()
 	Serial.println(body);
 	if (currStatus.equals("IDLE"))
 	{ // only accept a new move list when robot is idle
-		send(202, "accepted");
 		currStatus = "PROCESSING MOVES";
-		populateMoves(body);
+		bool validMoves = populateMoves(body);
+		if(validMoves) send(200, "move list accepted with length " + String(movesVector.size()));
+		else send(400, "invalid moves list");
 	}
 	else
 	{
-		send(205, "not accepting moves at this time");
+		send(400, "can only send moves when robot is IDLE");
 	}
+}
+
+void resetResponse()
+{
+	movesVector.clear();
+	currStatus = "IDLE";
+	send(200, "reset");
 }
 
 void setupWIFI()
@@ -96,6 +119,7 @@ void setupWIFI()
 		Serial.println("mDNS: cube.local");
 	}
 	server.on("/status", HTTP_GET, statusResponse);
+	server.on("/reset", HTTP_GET, resetResponse);
 	server.on("/moves", HTTP_POST, movesResponse);
 	server.begin();
 	Serial.println("server up");

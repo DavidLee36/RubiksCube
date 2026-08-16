@@ -52,6 +52,13 @@
 		}
 	}
 
+	async function resetRobotClick() {
+		const reset = confirm("Are you sure you wish to reset the robot?");
+		if(reset) {
+			await comm.resetRobot();
+		}
+	}
+
 	function moveClick(face, dir) {
 		cubeEngine.clearMoveList();
 		cubeEngine.move(face, dir);
@@ -206,12 +213,13 @@
 			</div>
 		</section>
 	</section>
-	<section class="panel">
+	<section class="panel robot-panel">
 		<header class="titles">
 			<h1>Robot</h1>
 			<h2>Status: <span class="robot-status">{robotStatus}</span></h2>
 			<p class="robot-status-desc">{robotStatusDesc}</p>
 		</header>
+		<button class="robot-reset" onclick={resetRobotClick}>Reset</button>
 	</section>
 </main>
 
@@ -242,6 +250,10 @@
 		padding: 1.25rem;
 		width: 15rem;
 		height: fit-content;
+	}
+
+	.robot-panel {
+		gap: 0.5rem;
 	}
 
 	.titles h1 {
@@ -420,5 +432,13 @@
 	.robot-status {
 		color: #c7ccd6;
 		font-size: 1rem;
+	}
+
+	.robot-reset {
+		width: fit-content;
+		padding: 0.5rem;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: #c7ccd6;
 	}
 </style>
