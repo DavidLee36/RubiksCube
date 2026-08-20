@@ -6,6 +6,8 @@
 #include <vector>
 #include "secrets.h" // gitignored; defines WIFI_SSID / WIFI_PASSWORD
 
+#pragma region WiFi Stuff
+
 WebServer server(80);
 
 String currStatus = "IDLE";
@@ -82,8 +84,10 @@ void movesResponse()
 	{ // only accept a new move list when robot is idle
 		currStatus = "PROCESSING MOVES";
 		bool validMoves = populateMoves(body);
-		if(validMoves) send(200, "move list accepted with length " + String(movesVector.size()));
-		else send(400, "invalid moves list");
+		if (validMoves)
+			send(200, "move list accepted with length " + String(movesVector.size()));
+		else
+			send(400, "invalid moves list");
 	}
 	else
 	{
@@ -125,10 +129,33 @@ void setupWIFI()
 	Serial.println("server up");
 }
 
+#pragma endregion
+
+#pragma region Motor Stuff
+
+const int MOTOR_PINS[6] = {32, 33, 25, 26, 27, 14};
+const int DIR_PIN = 21;
+const int UART_RX = 16;
+const int UART_TX = 17; 
+
+bool dir;
+
+void setupMotors()
+{
+	for (int i = 0; i < 6; i++)
+	{
+		pinMode(MOTOR_PINS[i], OUTPUT);
+	}
+	pinMode(DIR_PIN, OUTPUT);
+}
+
+#pragma endregion
+
 void setup()
 {
 	Serial.begin(115200);
 	delay(200);
+	setupMotors();
 	setupWIFI();
 }
 

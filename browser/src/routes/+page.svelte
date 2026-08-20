@@ -45,7 +45,7 @@
 		if(send) {
 			let currStatus = await comm.getRobotStatus(); // re-check status to avoid checking a stale state
 			if(currStatus[0] == "IDLE") {
-				comm.sendMoves();
+				comm.sendMoves(moveList);
 			}else {
 				alert(`Unable to send moves when robot is not idle, current state: ${currStatus[0]}`);
 			}

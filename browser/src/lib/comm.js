@@ -49,7 +49,7 @@ async function postRequest(path, bodyStr) {
  * @param {Array} moveList 
  */
 export async function sendMoves(moveList) {
-	const response = await postRequest("moves", "0911223300112233");
+	const response = await postRequest("moves", moveListToESP(moveList));
 	if(response) {
 		const data = await response.text();
 		console.log(data);
@@ -73,4 +73,16 @@ export async function getRobotStatus() {
 
 export async function resetRobot() {
 	await getRequest("reset");
+}
+
+/**
+ * Convert a move list to a format the ESP32 understands
+ * @param {Array} moveList 
+ */
+function moveListToESP(moveList) {
+	let espMoves = "";
+	for(const move of moveList) {
+		espMoves += move;
+	}
+	return espMoves;
 }
