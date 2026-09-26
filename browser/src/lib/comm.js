@@ -46,7 +46,7 @@ async function postRequest(path, bodyStr) {
 /**
  * sends a given move list to the ESP32, this method handles converting the move list
  * to a format the ESP32 understands
- * @param {Array} moveList 
+ * @param {Array<Move>} moveList 
  */
 export async function sendMoves(moveList) {
 	const response = await postRequest("moves", moveListToESP(moveList));
@@ -58,8 +58,7 @@ export async function sendMoves(moveList) {
 
 /**
  * Gets the current status of the robot and returns an array representing the state
- * [<status>, <description>]
- * @returns status array
+ * @returns {Array<String>} [status, description]
  */
 export async function getRobotStatus() {
 	const response = await getRequest("status");
@@ -81,8 +80,17 @@ export async function resetRobot() {
 	}
 }
 
+export async function abortRobot() {
+	const response = await getRequest("abort");
+	if(response) {
+		const data = await response.text();
+		console.log(data);
+	}
+}
+
 /**
- * Convert a move list to a format the ESP32 understands
+ * Convert a move list to a format the ESP32 understands.
+ * Single string with no delimiter
  * @param {Array} moveList 
  */
 function moveListToESP(moveList) {

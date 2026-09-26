@@ -59,6 +59,11 @@
 		}
 	}
 
+	async function abortRobotClick() {
+		const abort = confirm("ABORT?? This will stop all robot operations and may but the robot in a BAD state");
+		if(abort) await comm.abortRobot();
+	}
+
 	function moveClick(face, dir) {
 		cubeEngine.clearMoveList();
 		cubeEngine.move(face, dir);
@@ -219,7 +224,10 @@
 			<h2>Status: <span class="robot-status">{robotStatus}</span></h2>
 			<p class="robot-status-desc">{robotStatusDesc}</p>
 		</header>
-		<button class="robot-reset" onclick={resetRobotClick}>Reset</button>
+		<div class="robot-btns">
+			<button class="robot-reset" onclick={resetRobotClick}>Reset</button>
+			<button class="robot-abort" onclick={abortRobotClick}>ABORT</button>
+		</div>
 	</section>
 </main>
 
@@ -440,5 +448,18 @@
 		background: rgba(255, 255, 255, 0.06);
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		color: #c7ccd6;
+	}
+
+	.robot-abort {
+		width: fit-content;
+		padding: 0.5rem;
+		background: rgba(154, 0, 0, 0.856);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: #ffffff;
+	}
+
+	.robot-abort:hover {
+		background: rgba(255, 0, 0, 0.856);
+		color: black;
 	}
 </style>

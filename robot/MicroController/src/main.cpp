@@ -10,7 +10,14 @@
 
 WebServer server(80);
 
-enum Status { IDLE, ERROR, PROCESSING_MOVES, POPULATED_MOVES };
+enum Status
+{
+	IDLE,
+	ERROR,
+	PROCESSING_MOVES,
+	POPULATED_MOVES,
+	STOPPED
+};
 String statusInfo = "";
 Status currStatus = IDLE;
 
@@ -39,6 +46,9 @@ String statusToString()
 		break;
 	case POPULATED_MOVES:
 		s = "POPULATED MOVES";
+		break;
+	case STOPPED:
+		s = "STOPPED";
 		break;
 	default:
 		s = "ERROR UNHANDLED STATUS";
@@ -135,6 +145,12 @@ void resetResponse()
 	send(200, "reset");
 }
 
+void abortResponse()
+{
+	setStatus(STOPPED, "operations were stopped, robot must be reset");
+	send(200, "operations aborted");
+}
+
 void setupWIFI()
 {
 	WiFi.mode(WIFI_STA);
@@ -158,6 +174,7 @@ void setupWIFI()
 	server.on("/status", HTTP_GET, statusResponse);
 	server.on("/reset", HTTP_GET, resetResponse);
 	server.on("/moves", HTTP_POST, movesResponse);
+	server.on("/abort", HTTP_GET, abortResponse);
 	server.begin();
 	Serial.println("server up");
 }
@@ -171,7 +188,7 @@ const int MOTOR_PINS[6] = {32, 33, 25, 26, 27, 14};
 
 const int DIR_PIN = 21;
 const int UART_RX = 16;
-const int UART_TX = 17; 
+const int UART_TX = 17;
 
 bool dir;
 
