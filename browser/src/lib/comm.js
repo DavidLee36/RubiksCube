@@ -65,14 +65,20 @@ export async function getRobotStatus() {
 	const response = await getRequest("status");
 	let status = ["ERROR", "check console"];
 	if(response) {
-		status[0] = await response.text();
-		status[1] = "";
+		const responseStr = await response.text();
+		const splitIdx = responseStr.indexOf(",");
+		status[0] = responseStr.substring(0, splitIdx);
+		status[1] = responseStr.substring(splitIdx+1);
 	}
 	return status;
 }
 
 export async function resetRobot() {
-	await getRequest("reset");
+	const response = await getRequest("reset");
+	if(response) {
+		const data = await response.text();
+		console.log(data);
+	}
 }
 
 /**

@@ -12,7 +12,7 @@
 
 	let cube3d;
 	let busy = $state(false); // true while the 3D is animating; disables buttons
-	let duration = $state(250); // rotation animation speed in ms
+	let duration = $state(50); // rotation animation speed in ms
 	let scrambleMin = $state(15); // fewest scramble turns
 	let scrambleMax = $state(30); // most scramble turns
 	let promptSend = $state(true); // prompt to send moves to robot
@@ -44,7 +44,7 @@
 		const send = confirm(`Send moves? Length: ${moveList.length}`);
 		if(send) {
 			let currStatus = await comm.getRobotStatus(); // re-check status to avoid checking a stale state
-			if(currStatus[0] == "IDLE") {
+			if(currStatus[0].toUpperCase() == "IDLE") {
 				comm.sendMoves(moveList);
 			}else {
 				alert(`Unable to send moves when robot is not idle, current state: ${currStatus[0]}`);
@@ -203,7 +203,7 @@
 					onclick={resetClick}>Reset</button
 				>
 				<button class="action sexy" disabled={busy} onclick={sexyClick}
-					>Sexy Move</button
+					>Cool Move</button
 				>
 				<button
 					class="action ghost"

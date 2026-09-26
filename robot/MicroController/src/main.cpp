@@ -10,10 +10,43 @@
 
 WebServer server(80);
 
-String currStatus = "IDLE";
+enum Status { IDLE, ERROR, PROCESSING_MOVES, POPULATED_MOVES };
+String statusInfo = "";
+Status currStatus = IDLE;
 
 // Storing moves as strings because ex. move 02 wouldn't work as an int
 std::vector<String> movesVector;
+
+void setStatus(Status status, String info = "")
+{
+	currStatus = status;
+	statusInfo = info;
+}
+
+String statusToString()
+{
+	String s;
+	switch (currStatus)
+	{
+	case IDLE:
+		s = "IDLE";
+		break;
+	case ERROR:
+		s = "ERROR";
+		break;
+	case PROCESSING_MOVES:
+		s = "PROCESSING MOVES";
+		break;
+	case POPULATED_MOVES:
+		s = "POPULATED MOVES";
+		break;
+	default:
+		s = "ERROR UNHANDLED STATUS";
+		break;
+	}
+
+	return s + "," + statusInfo;
+}
 
 void printMoves()
 {
@@ -33,12 +66,12 @@ bool populateMoves(const String &movesStr)
 	movesVector.clear();
 	if (movesStr.length() == 0)
 	{
-		currStatus = "ERROR move string is empty";
+		setStatus(ERROR, "move string is empty");
 		return false;
 	}
 	if (movesStr.length() % 2 != 0)
 	{
-		currStatus = "ERROR invalid number of characters in move string";
+		setStatus(ERROR, "invalid number of characters in move string");
 		return false;
 	}
 	int idx = 0;
@@ -49,7 +82,7 @@ bool populateMoves(const String &movesStr)
 		int dir = movesStr.charAt(idx + 1) - '0';
 		if (motor > 5 || motor < 0 || dir > 3 || dir < 0)
 		{
-			currStatus = "ERROR invalid move detected";
+			setStatus(ERROR, "invalid move detected");
 			movesVector.clear();
 			return false;
 		}
@@ -57,8 +90,8 @@ bool populateMoves(const String &movesStr)
 		movesVector.push_back(movesStr.substring(idx, idx + 2));
 		idx += 2;
 	}
+	setStatus(POPULATED_MOVES, String(movesVector.size()));
 	String populated = "POPULATED MOVES " + String(movesVector.size());
-	currStatus = populated;
 	Serial.println(populated);
 	printMoves();
 	return true;
@@ -72,7 +105,7 @@ void send(int code, const String &body)
 
 void statusResponse()
 {
-	send(200, currStatus);
+	send(200, statusToString());
 }
 
 void movesResponse()
@@ -80,9 +113,9 @@ void movesResponse()
 	String body = server.arg("plain");
 	Serial.print("got moves: ");
 	Serial.println(body);
-	if (currStatus.equals("IDLE"))
+	if (currStatus == IDLE)
 	{ // only accept a new move list when robot is idle
-		currStatus = "PROCESSING MOVES";
+		setStatus(PROCESSING_MOVES);
 		bool validMoves = populateMoves(body);
 		if (validMoves)
 			send(200, "move list accepted with length " + String(movesVector.size()));
@@ -98,7 +131,7 @@ void movesResponse()
 void resetResponse()
 {
 	movesVector.clear();
-	currStatus = "IDLE";
+	setStatus(IDLE);
 	send(200, "reset");
 }
 
@@ -133,7 +166,9 @@ void setupWIFI()
 
 #pragma region Motor Stuff
 
+// Corresponding colors -   Y,  O,  B,  R,  G,  W
 const int MOTOR_PINS[6] = {32, 33, 25, 26, 27, 14};
+
 const int DIR_PIN = 21;
 const int UART_RX = 16;
 const int UART_TX = 17; 
