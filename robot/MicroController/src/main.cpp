@@ -18,8 +18,9 @@ enum Status
 	POPULATED_MOVES,
 	STOPPED
 };
+volatile Status currStatus = IDLE;
 String statusInfo = "";
-Status currStatus = IDLE;
+volatile bool abortFlag = false;
 
 // Storing moves as strings because ex. move 02 wouldn't work as an int
 std::vector<String> movesVector;
@@ -141,12 +142,14 @@ void movesResponse()
 void resetResponse()
 {
 	movesVector.clear();
+	abortFlag = false;
 	setStatus(IDLE);
 	send(200, "reset");
 }
 
 void abortResponse()
 {
+	abortFlag = true;
 	setStatus(STOPPED, "operations were stopped, robot must be reset");
 	send(200, "operations aborted");
 }
