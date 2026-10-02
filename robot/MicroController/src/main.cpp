@@ -186,6 +186,15 @@ void setupWIFI()
 	Serial.println("server up");
 }
 
+void wifiTask(void *parameters)
+{
+	for (;;)
+	{
+		server.handleClient();
+		vTaskDelay(2 / portTICK_PERIOD_MS);
+	}
+}
+
 #pragma endregion
 
 #pragma region Motor Stuff
@@ -265,6 +274,50 @@ void rotateMotor(int motorPin, Turn turn, bool direction)
 	}
 }
 
+void motorTask(void *parameters)
+{
+	for (;;)
+	{
+		if (abortFlag)
+		{
+			vTaskDelay(1000 / portTICK_PERIOD_MS);
+			continue;
+		}
+		if (movesVector.empty())
+		{
+			vTaskDelay(250 / portTICK_PERIOD_MS);
+			continue;
+		}
+
+		for (String move : movesVector)
+		{
+			if (abortFlag)
+				break;
+
+			int motorIdx = move.charAt(0) - '0';
+			if (motorIdx < 0 || motorIdx > 5)
+				setStatus(STOPPED, "ERROR PARSING MOVE");
+			Turn motorTurn;
+			bool motorDir;
+			switch (move.charAt(1))
+			{
+			case '0':
+				/* code */
+				break;
+			case '1':
+				break;
+			case '2':
+				break;
+			case '3':
+				break;
+			default:
+				setStatus(STOPPED, "ERROR PARSING MOVE");
+				break;
+			}
+		}
+	}
+}
+
 #pragma endregion
 
 void setup()
@@ -273,10 +326,18 @@ void setup()
 	delay(200);
 	setupMotors();
 	setupWIFI();
+
+	xTaskCreatePinnedToCore(
+		wifiTask,					// function name
+		"WiFi Task",				// task name
+		50000,						// stack size
+		NULL,						// parameters
+		1,							// priority
+		NULL,						// task handle
+		CONFIG_ARDUINO_RUNNING_CORE // core
+	);
 }
 
 void loop()
 {
-	server.handleClient();
-	delay(2);
 }
