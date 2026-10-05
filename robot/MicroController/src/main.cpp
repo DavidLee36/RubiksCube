@@ -16,6 +16,7 @@ enum Status
 	ERROR,
 	PROCESSING_MOVES,
 	POPULATED_MOVES,
+	RUNNING_MOVES,
 	STOPPED
 };
 volatile Status currStatus = IDLE;
@@ -54,6 +55,9 @@ String statusToString()
 		break;
 	case STOPPED:
 		s = "STOPPED";
+		break;
+	case RUNNING_MOVES:
+		s = "RUNNING MOVES";
 		break;
 	default:
 		s = "ERROR UNHANDLED STATUS";
@@ -135,11 +139,11 @@ void movesResponse()
 		if (validMoves)
 			send(200, "move list accepted with length " + String(movesVector.size()));
 		else
-			send(400, "invalid moves list");
+			send(200, "ERROR, invalid moves list");
 	}
 	else
 	{
-		send(400, "can only send moves when robot is IDLE");
+		send(200, "ERROR, can only send moves when robot is IDLE");
 	}
 }
 
@@ -149,6 +153,13 @@ void resetResponse()
 	abortFlag = false;
 	setStatus(IDLE);
 	send(200, "reset");
+}
+
+void powerCycleEspResponse()
+{
+	send(200, "power cycling");
+	delay(500);
+	ESP.restart();
 }
 
 void abortResponse()
@@ -182,6 +193,7 @@ void setupWIFI()
 	server.on("/reset", HTTP_GET, resetResponse);
 	server.on("/moves", HTTP_POST, movesResponse);
 	server.on("/abort", HTTP_GET, abortResponse);
+	server.on("/cycle", HTTP_GET, powerCycleEspResponse);
 	server.begin();
 	Serial.println("server up");
 }
@@ -250,18 +262,18 @@ void rotateMotor(int motorPin, Turn turn, bool direction)
 	switch (turn)
 	{
 	case QUARTER:
-		steps = 50 * MICRO_STEPS;
+		steps = 25 * MICRO_STEPS;
 		break;
 	case HALF:
-		steps = 100 * MICRO_STEPS;
+		steps = 50 * MICRO_STEPS;
 		break;
 	case FUll:
-		steps = 200 * MICRO_STEPS;
+		steps = 100 * MICRO_STEPS;
 		break;
 	default:
 		abortFlag = true;
 		setStatus(STOPPED, "invalid turn");
-		break;
+		return;
 	}
 
 	digitalWrite(DIR_PIN, direction);
@@ -272,6 +284,7 @@ void rotateMotor(int motorPin, Turn turn, bool direction)
 		digitalWrite(motorPin, LOW);
 		delayMicroseconds(STEP_INTERVAL_US);
 	}
+	vTaskDelay(1);
 }
 
 void motorTask(void *parameters)
@@ -283,38 +296,55 @@ void motorTask(void *parameters)
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
 			continue;
 		}
-		if (movesVector.empty())
+		if (currStatus != POPULATED_MOVES)
 		{
 			vTaskDelay(250 / portTICK_PERIOD_MS);
 			continue;
 		}
 
-		for (String move : movesVector)
+		for (int i = 0; i < movesVector.size(); i++)
 		{
 			if (abortFlag)
 				break;
 
-			int motorIdx = move.charAt(0) - '0';
+			int motorIdx = movesVector[i].charAt(0) - '0';
 			if (motorIdx < 0 || motorIdx > 5)
+			{
 				setStatus(STOPPED, "ERROR PARSING MOVE");
+				continue;
+			}
 			Turn motorTurn;
 			bool motorDir;
-			switch (move.charAt(1))
+			switch (movesVector[i].charAt(1))
 			{
 			case '0':
-				/* code */
+				motorTurn = QUARTER;
+				motorDir = false;
 				break;
 			case '1':
+				motorTurn = QUARTER;
+				motorDir = true;
 				break;
 			case '2':
+				motorTurn = HALF;
+				motorDir = false;
 				break;
 			case '3':
+				motorTurn = HALF;
+				motorDir = true;
 				break;
 			default:
 				setStatus(STOPPED, "ERROR PARSING MOVE");
-				break;
+				continue;
 			}
+			setStatus(RUNNING_MOVES, String("move ") + i + " / " + movesVector.size());
+			rotateMotor(MOTOR_PINS[motorIdx], motorTurn, motorDir);
+			delay(150);
 		}
+		movesVector.clear();
+		if (currStatus != STOPPED)
+			setStatus(IDLE);
+		vTaskDelay(250 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -335,6 +365,16 @@ void setup()
 		1,							// priority
 		NULL,						// task handle
 		CONFIG_ARDUINO_RUNNING_CORE // core
+	);
+
+	xTaskCreatePinnedToCore(
+		motorTask,	  // function name
+		"Motor Task", // task name
+		50000,		  // stack size
+		NULL,		  // parameters
+		1,			  // priority
+		NULL,		  // task handle
+		0			  // core
 	);
 }
 

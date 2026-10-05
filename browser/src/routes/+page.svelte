@@ -8,7 +8,7 @@
 		setInterval(async () => {
 			await updateRobotStatus();
 		}, 1000);
-	})
+	});
 
 	let cube3d;
 	let busy = $state(false); // true while the 3D is animating; disables buttons
@@ -18,6 +18,7 @@
 	let promptSend = $state(true); // prompt to send moves to robot
 	let robotStatus = $state("N/A");
 	let robotStatusDesc = $state("");
+	let customString = $state("");
 
 	// Per-face turn buttons. Colors are just a nice palette, not the cube's.
 	const moveFaces = ["U", "D", "L", "R", "F", "B"];
@@ -42,26 +43,44 @@
 			? cubeEngine.getOptimizedMoveList()
 			: cubeEngine.getMoveList();
 		const send = confirm(`Send moves? Length: ${moveList.length}`);
-		if(send) {
+		if (send) {
 			let currStatus = await comm.getRobotStatus(); // re-check status to avoid checking a stale state
-			if(currStatus[0].toUpperCase() == "IDLE") {
+			if (currStatus[0].toUpperCase() == "IDLE") {
 				comm.sendMoves(moveList);
-			}else {
-				alert(`Unable to send moves when robot is not idle, current state: ${currStatus[0]}`);
+			} else {
+				alert(
+					`Unable to send moves when robot is not idle, current state: ${currStatus[0]}`,
+				);
 			}
 		}
 	}
 
 	async function resetRobotClick() {
 		const reset = confirm("Are you sure you wish to reset the robot?");
-		if(reset) {
+		if (reset) {
 			await comm.resetRobot();
 		}
 	}
 
 	async function abortRobotClick() {
-		const abort = confirm("ABORT?? This will stop all robot operations and may but the robot in a BAD state");
-		if(abort) await comm.abortRobot();
+		const abort = confirm(
+			"ABORT?? This will stop all robot operations and may but the robot in a BAD state",
+		);
+		if (abort) await comm.abortRobot();
+	}
+
+	async function powerRobotClick() {
+		const cycle = confirm(
+			"This will power cycle the ESP32 causing a full restart",
+		);
+		if (cycle) await comm.powerCycleRobot();
+	}
+
+	async function sendCustomClick() {
+		const send = confirm(
+			`Send list? ${customString}`
+		)
+		if (send) await comm.sendMoves(customString);
 	}
 
 	function moveClick(face, dir) {
@@ -226,8 +245,24 @@
 		</header>
 		<div class="robot-btns">
 			<button class="robot-reset" onclick={resetRobotClick}>Reset</button>
+			<button class="robot-reset" onclick={powerRobotClick}
+				>Power Cycle</button
+			>
 			<button class="robot-abort" onclick={abortRobotClick}>ABORT</button>
 		</div>
+	</section>
+	<section class="panel send-string-panel">
+		<header class="titles">
+			<h1>Send Move String</h1>
+		</header>
+		<input
+			type="text"
+			name="send-custom"
+			id="send-custom"
+			class="setting-input"
+			bind:value={customString}
+		/>
+		<button class="robot-reset" onclick={sendCustomClick}>Send</button>
 	</section>
 </main>
 
@@ -461,5 +496,9 @@
 	.robot-abort:hover {
 		background: rgba(255, 0, 0, 0.856);
 		color: black;
+	}
+
+	.send-string-panel {
+		gap: 1rem;
 	}
 </style>

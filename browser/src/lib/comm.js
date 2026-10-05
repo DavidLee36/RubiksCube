@@ -46,10 +46,11 @@ async function postRequest(path, bodyStr) {
 /**
  * sends a given move list to the ESP32, this method handles converting the move list
  * to a format the ESP32 understands
- * @param {Array<Move>} moveList 
+ * @param moveList
  */
 export async function sendMoves(moveList) {
-	const response = await postRequest("moves", moveListToESP(moveList));
+	if(typeof moveList != "string") moveList = moveListToESP(moveList)
+	const response = await postRequest("moves", moveList);
 	if(response) {
 		const data = await response.text();
 		console.log(data);
@@ -82,6 +83,14 @@ export async function resetRobot() {
 
 export async function abortRobot() {
 	const response = await getRequest("abort");
+	if(response) {
+		const data = await response.text();
+		console.log(data);
+	}
+}
+
+export async function powerCycleRobot() {
+	const response = await getRequest("cycle");
 	if(response) {
 		const data = await response.text();
 		console.log(data);
