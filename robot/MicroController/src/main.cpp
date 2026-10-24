@@ -234,7 +234,7 @@ HardwareSerial SerialTMC(2);
 TMC2209Stepper driver(&SerialTMC, R_SENSE, DRIVER_ADDR);
 
 const int STEP_INTERVAL_US = 200; // micro second duration between steps (lower = faster)
-const int MICRO_STEPS = 16;
+const int MICRO_STEPS = 8;
 
 void setupMotors()
 {
@@ -247,13 +247,12 @@ void setupMotors()
 	SerialTMC.begin(115200, SERIAL_8N1, UART_RX, UART_TX);
 	driver.begin();
 
-	driver.toff(5);				  // enable driver
-	driver.I_scale_analog(false); // ignore VREF pot, use internal ref so rms_current is honored
-	driver.rms_current(900, 0.5); // 900mA run, ~450mA hold (2nd arg = hold fraction)
+	driver.toff(5);				   // enable driver
+	driver.I_scale_analog(false);  // ignore VREF pot, use internal ref so rms_current is honored
+	driver.rms_current(1300, 0.0); // 900mA run, ~450mA hold (2nd arg = hold fraction)
 	driver.microsteps(MICRO_STEPS);
 	driver.en_spreadCycle(false); // stealthChop (quiet)
 	driver.pwm_autoscale(true);
-	driver.TPOWERDOWN(20); // delay before dropping to hold current after standstill
 }
 
 void rotateMotor(int motorPin, Turn turn, bool direction)
@@ -262,13 +261,13 @@ void rotateMotor(int motorPin, Turn turn, bool direction)
 	switch (turn)
 	{
 	case QUARTER:
-		steps = 25 * MICRO_STEPS;
-		break;
-	case HALF:
 		steps = 50 * MICRO_STEPS;
 		break;
-	case FUll:
+	case HALF:
 		steps = 100 * MICRO_STEPS;
+		break;
+	case FUll:
+		steps = 200 * MICRO_STEPS;
 		break;
 	default:
 		abortFlag = true;
